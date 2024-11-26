@@ -22,6 +22,7 @@ public class UserDTO {
     public UserDTO(User user) {
         this.name = user.getName();
         this.email = user.getEmail();
+        this.password = user.getPassword();
         this.role = String.valueOf(user.getRole());
         this.phoneNumber = user.getPhoneNumber();
     }

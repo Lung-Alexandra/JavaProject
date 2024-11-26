@@ -59,7 +59,6 @@ public class ClinicService {
         Doctor doctor = doctorRepository.findById(doctorId)
                 .orElseThrow(DoctorNotFound::new);
 
-        doctor.setClinic(clinic);
         doctorRepository.save(doctor);
     }
 

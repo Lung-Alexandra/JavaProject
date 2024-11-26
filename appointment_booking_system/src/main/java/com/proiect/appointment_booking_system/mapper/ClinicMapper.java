@@ -36,4 +36,6 @@ public class ClinicMapper {
         // Nu setăm doctorii aici pentru a evita probleme de sincronizare cu baza de date
         return clinic;
     }
+
+
 }

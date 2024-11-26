@@ -67,6 +67,29 @@ CREATE TABLE IF NOT EXISTS `Notification`
 );
 
 
+INSERT INTO User (name, email, password, role, phone_number, created_at, updated_at)
+VALUES
+    ('John Doe', 'john.doe@example.com', 'password123', 'PATIENT', '1234567890', NOW(), NOW()),
+    ('Alice Smith', 'alice.smith@example.com', 'password123', 'DOCTOR', '0987654321', NOW(), NOW()),
+    ('Admin User', 'admin@example.com', 'adminpass', 'ADMIN', '1122334455', NOW(), NOW());
+
+INSERT INTO Clinic (name, location, contact_number, email)
+VALUES
+    ('City Health Clinic', '123 Main St, Springfield', '1234567890', 'info@cityhealth.com'),
+    ('Downtown Medical Center', '456 Elm St, Springfield', '0987654321', 'contact@downtownmed.com');
+
+
+INSERT INTO Doctor (user_id, specialization, clinic_id, availability_schedule)
+VALUES
+    (2, 'Cardiologist', 1, '{"Monday": "9:00-17:00", "Wednesday": "9:00-17:00"}');
+
+
+INSERT INTO Patient (user_id, medical_history, address)
+VALUES
+    (1, '{"allergies": "None", "chronic_conditions": "None"}', '789 Oak St, Springfield');
+
+
+
 SHOW TABLES;
 
 select * from User;
@@ -76,3 +99,9 @@ select * from Clinic;
 select * from Appointment;
 select * from Notification;
 
+DROP TABLE IF EXISTS Notification;
+DROP TABLE IF EXISTS Appointment;
+DROP TABLE IF EXISTS Doctor;
+DROP TABLE IF EXISTS Patient;
+DROP TABLE IF EXISTS Clinic;
+DROP TABLE IF EXISTS User;

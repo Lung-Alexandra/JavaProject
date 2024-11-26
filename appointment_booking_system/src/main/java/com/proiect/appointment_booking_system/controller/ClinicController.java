@@ -49,13 +49,6 @@ public class ClinicController {
         return ResponseEntity.ok("Clinic deleted successfully");
     }
 
-    // Endpoint pentru a adăuga un doctor la o clinică
-    @PostMapping("/{clinicId}/doctors/{doctorId}")
-    public ResponseEntity<String> addDoctorToClinic(@PathVariable Integer clinicId, @PathVariable Integer doctorId) {
-        clinicService.addDoctorToClinic(clinicId, doctorId);
-        return ResponseEntity.ok("Doctor added to clinic successfully");
-    }
-
     // Endpoint pentru a obține toți doctorii dintr-o clinică
     @GetMapping("/{clinicId}/doctors")
     public ResponseEntity<List<DoctorDTO>> getDoctorsByClinicId(@PathVariable Long clinicId) {

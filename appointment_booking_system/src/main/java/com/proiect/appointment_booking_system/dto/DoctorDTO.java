@@ -1,10 +1,12 @@
 package com.proiect.appointment_booking_system.dto;
 
+import com.proiect.appointment_booking_system.model.Clinic;
+
 public class DoctorDTO {
     private Integer id;
     private UserDTO user;
     private String specialization;
-    private ClinicDTO clinic;
+    private Integer clinicId;
     private String availabilitySchedule;
 
     // Getters and Setters
@@ -33,12 +35,12 @@ public class DoctorDTO {
         this.specialization = specialization;
     }
 
-    public ClinicDTO getClinic() {
-        return clinic;
+    public Integer getClinicId() {
+        return clinicId;
     }
 
-    public void setClinic(ClinicDTO clinic) {
-        this.clinic = clinic;
+    public void setClinicId(Integer clinicId) {
+        this.clinicId = clinicId;
     }
 
     public String getAvailabilitySchedule() {

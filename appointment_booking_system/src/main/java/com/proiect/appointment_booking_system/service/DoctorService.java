@@ -1,9 +1,11 @@
 package com.proiect.appointment_booking_system.service;
 
 import com.proiect.appointment_booking_system.dto.DoctorDTO;
+import com.proiect.appointment_booking_system.exceptions.ClinicNotFound;
 import com.proiect.appointment_booking_system.mapper.DoctorMapper;
 import com.proiect.appointment_booking_system.model.Clinic;
 import com.proiect.appointment_booking_system.model.Doctor;
+import com.proiect.appointment_booking_system.repository.ClinicRepository;
 import com.proiect.appointment_booking_system.repository.DoctorRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,13 +20,11 @@ public class DoctorService {
     @Autowired
     private DoctorRepository doctorRepository;
     @Autowired
-    private DoctorRepository clinicRepository;
-
-    @Autowired
-    private DoctorMapper doctorMapper;
+    private ClinicRepository clinicRepository;
 
     public void registerDoctor(DoctorDTO doctorDTO) {
-        Doctor doctor = doctorMapper.toEntity(doctorDTO);
+        Clinic clinic = clinicRepository.findById(doctorDTO.getClinicId()).orElseThrow(ClinicNotFound::new);
+        Doctor doctor = DoctorMapper.toEntity(doctorDTO,clinic);
         doctorRepository.save(doctor);
     }
 
@@ -41,7 +41,8 @@ public class DoctorService {
     }
 
     public void updateDoctor(DoctorDTO doctorDTO) {
-        Doctor doctor = DoctorMapper.toEntity(doctorDTO);
+        Clinic clinic = clinicRepository.findById(doctorDTO.getClinicId()).orElseThrow(ClinicNotFound::new);
+        Doctor doctor = DoctorMapper.toEntity(doctorDTO,clinic);
         doctorRepository.save(doctor);
     }
 
@@ -51,11 +52,6 @@ public class DoctorService {
 
     public void assignClinicToDoctor(Integer doctorId, Integer clinicId) {
         Doctor doctor = doctorRepository.findById(doctorId).orElseThrow(() -> new RuntimeException("Doctor not found"));
-        Clinic clinic = clinicRepository.findById(clinicId).orElseThrow(() -> new RuntimeException("Clinic not found")).getClinic();
-
-        doctor.setClinic(clinic);
-
         doctorRepository.save(doctor);
-
     }
 }

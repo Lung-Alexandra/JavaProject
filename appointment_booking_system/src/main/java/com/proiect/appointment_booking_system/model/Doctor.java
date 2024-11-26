@@ -1,5 +1,7 @@
 package com.proiect.appointment_booking_system.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 
 @Entity
@@ -9,15 +11,16 @@ public class Doctor {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)  // Cascade pentru a salva automat User
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(nullable = false)
     private String specialization;
+
 
     @ManyToOne
     @JoinColumn(name = "clinic_id", nullable = false)
+    @JsonIgnore // Ignoră câmpul clinic pentru a evita recursivitatea
     private Clinic clinic;
 
     @Column(nullable = false)
@@ -55,6 +58,7 @@ public class Doctor {
     public void setClinic(Clinic clinic) {
         this.clinic = clinic;
     }
+
 
     public String getAvailabilitySchedule() {
         return availabilitySchedule;

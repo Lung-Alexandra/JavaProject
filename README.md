@@ -15,6 +15,8 @@ Diagram containing the 6 entities and the relationships between them.
 Relationships include One-to-One, One-to-Many, and Many-to-One.
 
 
+![diagrama](diagram.svg)
+
 Entities and Relationships:
 1. `User`
     - Generalizes all users (patients, doctors, administrators).

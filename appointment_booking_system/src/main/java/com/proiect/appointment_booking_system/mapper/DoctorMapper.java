@@ -1,6 +1,8 @@
 package com.proiect.appointment_booking_system.mapper;
 
+import com.proiect.appointment_booking_system.dto.ClinicDTO;
 import com.proiect.appointment_booking_system.dto.DoctorDTO;
+import com.proiect.appointment_booking_system.model.Clinic;
 import com.proiect.appointment_booking_system.model.Doctor;
 import org.springframework.stereotype.Component;
 
@@ -12,16 +14,18 @@ public class DoctorMapper {
         doctorDTO.setId(doctor.getId());
         doctorDTO.setSpecialization(doctor.getSpecialization());
         doctorDTO.setUser(UserMapper.toDTO(doctor.getUser()));
-        doctorDTO.setClinic(ClinicMapper.toDTO(doctor.getClinic())); // Convertim clinica la DTO
+        doctorDTO.setAvailabilitySchedule(doctor.getAvailabilitySchedule());
+        doctorDTO.setClinicId(doctor.getClinic().getId());
         return doctorDTO;
     }
 
-    public static Doctor toEntity(DoctorDTO doctorDTO) {
+    public static Doctor toEntity(DoctorDTO doctorDTO, Clinic clinic) {
         Doctor doctor = new Doctor();
-        doctor.setId(doctorDTO.getId());
-        doctor.setSpecialization(doctorDTO.getSpecialization());
         doctor.setUser(UserMapper.toEntity(doctorDTO.getUser()));
-        doctor.setClinic(ClinicMapper.toEntity(doctorDTO.getClinic())); // Convertim DTO-ul clinicii la entitate
+        doctor.setId(doctorDTO.getId());
+        doctor.setAvailabilitySchedule(doctorDTO.getAvailabilitySchedule());
+        doctor.setClinic(clinic);
+        doctor.setSpecialization(doctorDTO.getSpecialization());
         return doctor;
     }
 }

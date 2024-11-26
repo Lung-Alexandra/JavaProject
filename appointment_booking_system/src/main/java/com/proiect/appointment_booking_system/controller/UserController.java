@@ -2,6 +2,9 @@ package com.proiect.appointment_booking_system.controller;
 
 import com.proiect.appointment_booking_system.dto.DoctorDTO;
 import com.proiect.appointment_booking_system.dto.UserDTO;
+import com.proiect.appointment_booking_system.exceptions.ClinicNotFound;
+import com.proiect.appointment_booking_system.model.Clinic;
+import com.proiect.appointment_booking_system.repository.ClinicRepository;
 import com.proiect.appointment_booking_system.service.DoctorService;
 import com.proiect.appointment_booking_system.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -48,7 +51,7 @@ public class UserController {
 
     // --------------------- DOCTOR FUNCTIONALITIES ---------------------
 
-    @PostMapping("/doctors")
+    @PostMapping("/doctors/register")
     public ResponseEntity<String> registerDoctor(@RequestBody DoctorDTO doctorDTO) {
         doctorService.registerDoctor(doctorDTO);
         return ResponseEntity.ok("Doctor registered successfully");
@@ -72,9 +75,4 @@ public class UserController {
         return ResponseEntity.ok("Doctor deleted successfully");
     }
 
-    @PostMapping("/doctors/{doctorId}/clinic/{clinicId}")
-    public ResponseEntity<String> assignClinicToDoctor(@PathVariable Integer doctorId, @PathVariable Integer clinicId) {
-        doctorService.assignClinicToDoctor(doctorId, clinicId);
-        return ResponseEntity.ok("Doctor assigned to clinic successfully");
-    }
 }

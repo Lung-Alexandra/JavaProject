@@ -5,9 +5,6 @@ import com.proiect.appointment_booking_system.enums.Role;
 import jakarta.persistence.*;
 
 
-
-import java.time.LocalDateTime;
-
 @Entity
 
 @Table(name = "User")

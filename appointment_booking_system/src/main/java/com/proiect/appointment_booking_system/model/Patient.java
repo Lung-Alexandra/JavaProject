@@ -9,11 +9,11 @@ public class Patient {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @OneToOne
+    @OneToOne(cascade = CascadeType.PERSIST)  // Cascade pentru a salva automat User
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob  // Tells Hibernate to store this as a large object (TEXT in DB)
     private String medicalHistory; // JSON sau text lung
 
     @Column(nullable = false)
