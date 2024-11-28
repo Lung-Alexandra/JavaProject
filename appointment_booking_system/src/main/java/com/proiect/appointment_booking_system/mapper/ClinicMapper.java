@@ -17,7 +17,6 @@ public class ClinicMapper {
         clinicDTO.setContactNumber(clinic.getContactNumber());
         clinicDTO.setEmail(clinic.getEmail());
 
-        // Convertim lista de doctori
         clinicDTO.setDoctors(clinic.getDoctors()
                 .stream()
                 .map(DoctorMapper::toDTO)
@@ -33,7 +32,6 @@ public class ClinicMapper {
         clinic.setContactNumber(clinicDTO.getContactNumber());
         clinic.setEmail(clinicDTO.getEmail());
 
-        // Nu setăm doctorii aici pentru a evita probleme de sincronizare cu baza de date
         return clinic;
     }
 

@@ -1,6 +1,5 @@
 package com.proiect.appointment_booking_system.dto;
 
-import com.proiect.appointment_booking_system.model.Clinic;
 
 public class DoctorDTO {
     private Integer id;

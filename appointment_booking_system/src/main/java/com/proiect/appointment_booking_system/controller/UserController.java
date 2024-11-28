@@ -2,9 +2,6 @@ package com.proiect.appointment_booking_system.controller;
 
 import com.proiect.appointment_booking_system.dto.DoctorDTO;
 import com.proiect.appointment_booking_system.dto.UserDTO;
-import com.proiect.appointment_booking_system.exceptions.ClinicNotFound;
-import com.proiect.appointment_booking_system.model.Clinic;
-import com.proiect.appointment_booking_system.repository.ClinicRepository;
 import com.proiect.appointment_booking_system.service.DoctorService;
 import com.proiect.appointment_booking_system.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;

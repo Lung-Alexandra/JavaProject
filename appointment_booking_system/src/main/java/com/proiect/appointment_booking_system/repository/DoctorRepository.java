@@ -1,8 +1,6 @@
 package com.proiect.appointment_booking_system.repository;
 
-import aj.org.objectweb.asm.commons.Remapper;
 import com.proiect.appointment_booking_system.model.Doctor;
-import com.proiect.appointment_booking_system.model.Patient;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

@@ -1,0 +1,55 @@
+//add user
+{
+  "name": "John Doe",
+  "email": "johndoe@example.com",
+  "password": "password123",
+  "role": "PATIENT",
+  "phoneNumber": "1234567890"
+}
+
+
+//add doctor
+
+{
+  "user": {
+    "id": 10,
+    "name": "Dr. John Smith",
+    "email": "john.smith@example.com",
+    "password": "password123",
+    "role": "DOCTOR",
+    "phoneNumber": "1234567890"
+  },
+  "specialization": "Cardiologist",
+  "clinicId": 2,
+  "availabilitySchedule": "Monday: 09:00-12:00, 14:00-17:00; Tuesday: 09:00-12:00"
+}
+
+
+//add clinic
+//http://localhost:8080/clinics/email?email=central.clinic@example.com
+{
+  "name": "Central Clinic",
+  "location": "Downtown",
+  "contactNumber": "9876543210",
+  "email": "central.clinic@example.com"
+}
+
+//appointments
+{
+  "patientId": 1,
+  "doctorId": 2,
+  "clinicId": 1,
+  "appointmentDate": "2024-11-28",
+  "appointmentTime": "10:30",
+  "status": "BOOKED"
+}
+
+
+// notification
+
+{
+  "patientId": 1,
+  "appointmentId": 1,
+  "notificationType": "REMINDER",
+  "sentAt": "2024-11-27T10:30:00"
+}

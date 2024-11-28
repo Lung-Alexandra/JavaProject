@@ -1,6 +1,5 @@
 package com.proiect.appointment_booking_system.mapper;
 
-import com.proiect.appointment_booking_system.dto.ClinicDTO;
 import com.proiect.appointment_booking_system.dto.DoctorDTO;
 import com.proiect.appointment_booking_system.model.Clinic;
 import com.proiect.appointment_booking_system.model.Doctor;

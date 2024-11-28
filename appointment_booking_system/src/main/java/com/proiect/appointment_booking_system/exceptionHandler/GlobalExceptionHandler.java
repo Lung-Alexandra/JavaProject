@@ -11,6 +11,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({
             ClinicNotFound.class,
             DoctorNotFound.class,
+            PatientNotFound.class,
+            AppointmentNotFound.class,
             UserNotFoundError.class,
             UserAlreadyExistsException.class})
     public ResponseEntity handle(Exception e) {
