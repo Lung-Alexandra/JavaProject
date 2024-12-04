@@ -6,10 +6,11 @@ import jakarta.persistence.*;
 import java.time.*;
 
 @Entity
+@Table(name = "Appointments")
 public class Appointment {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    private Long id;
 
     @ManyToOne
     @JoinColumn(name = "patient_id", nullable = false)
@@ -30,13 +31,18 @@ public class Appointment {
     @Column(nullable = false)
     private Status status; // E.g., "BOOKED", "CANCELLED", "COMPLETED"
 
+
+    @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Notification notification;
+
+
     // Getters and setters
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 

@@ -3,35 +3,35 @@ package com.proiect.appointment_booking_system.dto;
 import java.time.LocalDateTime;
 
 public class NotificationDTO {
-    private Integer id;
-    private Integer patientId;
-    private Integer appointmentId;
+    private Long id;
+    private Long patientId;
+    private Long appointmentId;
     private String notificationType;
     private LocalDateTime sentAt;
 
     // Getters and setters
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Integer getPatientId() {
+    public Long getPatientId() {
         return patientId;
     }
 
-    public void setPatientId(Integer patientId) {
+    public void setPatientId(Long patientId) {
         this.patientId = patientId;
     }
 
-    public Integer getAppointmentId() {
+    public Long getAppointmentId() {
         return appointmentId;
     }
 
-    public void setAppointmentId(Integer appointmentId) {
+    public void setAppointmentId(Long appointmentId) {
         this.appointmentId = appointmentId;
     }
 

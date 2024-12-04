@@ -10,29 +10,38 @@ while offering clinics tools for managing appointments efficiently.
 
 
 
-### Schema bazei de date
+### Databese's Schema
 Diagram containing the 6 entities and the relationships between them. 
-Relationships include One-to-One, One-to-Many, and Many-to-One.
+The entities are:
+* User (shared by both Doctor and Patient)
+* Doctor (extends User)
+* Patient (extends User)
+* Clinic
+* Appointment
+* Notification
+
+Relationships include One-to-One, One-to-Many, and Many-to-One and Many-to-Many.
 
 
 ![diagrama](diagram.svg)
 
 Entities and Relationships:
 1. `User`
-    - Generalizes all users (patients, doctors, administrators).
+    - Generalizes all users (patients, doctors).
     - Has One-to-One relationships with Patient and Doctor.
    
 2. `Doctor`
    - Extends users to include doctors.
-   - Many-to-One relationship with Clinic.
+   - Many-to-Many relationship with Clinic.
    
 3. `Patient`
     - Extends users to include patients.
     - One-to-Many relationship with Appointment.
+    - One-to-Many relationship with Notification.
    
 4. `Clinic`
    - Represents clinics where doctors work.
-   - One-to-Many relationship with Doctor.
+   - Many-to-Many relationship with Doctor.
    
 5. `Appointment`
    - Links patients, doctors, and clinics.
@@ -40,20 +49,44 @@ Entities and Relationships:
      - Many-to-One with Doctor.
      - Many-to-One with Patient.
      - Many-to-One with Clinic.
+     - One-to-One with Notification.
      
 6. `Notification`
    - Represents messages sent to users about appointments.
    - Relationships:
-     - Many-to-One with User.
-     - Many-to-One with Appointment.
+     - Many-to-One with Patient.
+     - One-to-One with Appointment.
 
 
-* User (shared by both Doctor and Patient)
-* Doctor (extends User)
-* Patient (extends User)
-* Clinic
-* Appointment
-* Notification
+
+1. REST Endpoints
+   - Doctor
+       1. `GET /doctors`
+         - Returns a list of all doctors.
+       2. `GET /doctors/{id}`
+          - Returns a specific doctor by ID.
+       3. `POST /doctors/reggister`
+          - Registers a new doctor.
+       4. `DELETE /doctors/{id}` 
+          - Deletes a doctor by ID.
+    - Clinic
+       1. `GET /clinics`
+          - Returns a list of all clinics.
+       2. `GET /clinics/{id}`
+          - Returns a specific clinic by ID.
+       3. `GET /clinics/email` 
+          - Returns a specific clinic by email. 
+       4. `POST /clinics/register`
+          - Registers a new clinic.
+       5. `DELETE /clinics/{id}`
+          - Deletes a clinic by ID.
+       6. `GET /clinics/{clinicId}/doctors`
+          - Returns a list of doctors working at a specific clinic.
+       7. `DELETE /clinics/{id}`
+          - Removes a clinic.
+
+
+
 
 
 

@@ -1,19 +1,19 @@
 package com.proiect.appointment_booking_system.dto;
 
 public class PatientDTO {
-    private Integer userId;
+    private UserDTO user;
     private String medicalHistory;
     private String address;
 
     // Getters and Setters
     // ...
 
-    public Integer getUserId() {
-        return userId;
+    public UserDTO getUser() {
+        return user;
     }
 
-    public void setUserId(Integer userId) {
-        this.userId = userId;
+    public void setUser(UserDTO user) {
+        this.user = user;
     }
 
     public String getMedicalHistory() {

@@ -2,14 +2,17 @@ package com.proiect.appointment_booking_system.model;
 
 import jakarta.persistence.*;
 
+import java.util.List;
+
 @Entity
-@Table(name = "Patient")
+@Table(name = "Patients")
 public class Patient {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id;
+    //    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @OneToOne(cascade = CascadeType.PERSIST)  // Cascade pentru a salva automat User
+    @MapsId
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -19,14 +22,17 @@ public class Patient {
     @Column(nullable = false)
     private String address;
 
+    @OneToMany(mappedBy = "patient", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Appointment> appointments;
+
 
     // Getters and setters
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -53,4 +59,13 @@ public class Patient {
     public void setAddress(String address) {
         this.address = address;
     }
+
+    public List<Appointment> getAppointments() {
+        return appointments;
+    }
+
+    public void setAppointments(List<Appointment> appointments) {
+        this.appointments = appointments;
+    }
+
 }

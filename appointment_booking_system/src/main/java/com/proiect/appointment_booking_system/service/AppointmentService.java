@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Service
 public class AppointmentService {
     @Autowired
-    private final AppointmentRepository repository;
+    private  AppointmentRepository repository;
     @Autowired
     private DoctorRepository doctorRepository;
     @Autowired
@@ -31,15 +31,10 @@ public class AppointmentService {
     @Autowired
     private PatientRepository patientRepository;
 
-    private final AppointmentMapper mapper;
 
-    public AppointmentService(AppointmentRepository repository, AppointmentMapper mapper) {
-        this.repository = repository;
-        this.mapper = mapper;
-    }
 
     public List<AppointmentDTO> getAllAppointments() {
-        return repository.findAll().stream().map(mapper::toDTO).collect(Collectors.toList());
+        return repository.findAll().stream().map(AppointmentMapper::toDTO).collect(Collectors.toList());
     }
 
     public AppointmentDTO createAppointment(AppointmentDTO dto) {
@@ -47,7 +42,7 @@ public class AppointmentService {
         Patient patient = patientRepository.findById(dto.getPatientId()).orElseThrow( PatientNotFound::new);
         Doctor doctor = doctorRepository.findById(dto.getDoctorId()).orElseThrow(DoctorNotFound::new);
 
-        Appointment appointment = mapper.toEntity(dto, patient, doctor, clinic);
-        return mapper.toDTO(repository.save(appointment));
+        Appointment appointment = AppointmentMapper.toEntity(dto, patient, doctor, clinic);
+        return AppointmentMapper.toDTO(repository.save(appointment));
     }
 }

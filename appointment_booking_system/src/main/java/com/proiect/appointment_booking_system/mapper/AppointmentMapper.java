@@ -9,11 +9,11 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class AppointmentMapper {
-    public AppointmentDTO toDTO(Appointment appointment) {
+    public static AppointmentDTO toDTO(Appointment appointment) {
         AppointmentDTO appointmentDto = new AppointmentDTO();
         appointmentDto.setId(appointment.getId());
         appointmentDto.setPatientId(appointment.getPatient().getId());
-        appointmentDto.setDoctorId(appointment.getDoctor().getId());
+        appointmentDto.setDoctorId(appointment.getDoctor().getUser().getId());
         appointmentDto.setClinicId(appointment.getClinic().getId());
         appointmentDto.setAppointmentDate(appointment.getAppointmentDate());
         appointmentDto.setAppointmentTime(appointment.getAppointmentTime());
@@ -21,7 +21,7 @@ public class AppointmentMapper {
         return appointmentDto;
     }
 
-    public Appointment toEntity(AppointmentDTO appointmentDto, Patient patient, Doctor doctor, Clinic clinic) {
+    public static Appointment toEntity(AppointmentDTO appointmentDto, Patient patient, Doctor doctor, Clinic clinic) {
         Appointment appointment = new Appointment();
         appointment.setId(appointmentDto.getId());
         appointment.setPatient(patient);

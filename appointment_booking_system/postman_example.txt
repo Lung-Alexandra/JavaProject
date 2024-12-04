@@ -20,9 +20,25 @@
     "phoneNumber": "1234567890"
   },
   "specialization": "Cardiologist",
-  "clinicId": 2,
+  "clinicIds": [1],
   "availabilitySchedule": "Monday: 09:00-12:00, 14:00-17:00; Tuesday: 09:00-12:00"
 }
+
+{
+  "user": {
+    "id": 10,
+    "name": "Dr. John Doe",
+    "email": "john.doe@example.com",
+    "password": "password123",
+    "role": "DOCTOR",
+    "phoneNumber": "1234567890"
+  },
+  "specialization": "Cardiologist",
+  "clinicIds": [1, 2],
+  "availabilitySchedule": "Monday: 09:00-12:00, 14:00-17:00; Tuesday: 09:00-12:00"
+}
+
+
 
 
 //add clinic
@@ -32,6 +48,13 @@
   "location": "Downtown",
   "contactNumber": "9876543210",
   "email": "central.clinic@example.com"
+}
+
+{
+    "name": "HealthCare Clinic",
+    "location": "New York",
+    "phoneNumber": "073263294529",
+    "email": "healthcare.clinic@example.com"
 }
 
 //appointments

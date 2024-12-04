@@ -1,20 +1,22 @@
 package com.proiect.appointment_booking_system.dto;
 
 
+import java.util.Set;
+
 public class DoctorDTO {
-    private Integer id;
+    private Long id;
     private UserDTO user;
     private String specialization;
-    private Integer clinicId;
+    private Set<Long> clinicIds;
     private String availabilitySchedule;
 
     // Getters and Setters
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -34,13 +36,15 @@ public class DoctorDTO {
         this.specialization = specialization;
     }
 
-    public Integer getClinicId() {
-        return clinicId;
+
+    public Set<Long> getClinicIds() {
+        return clinicIds;
     }
 
-    public void setClinicId(Integer clinicId) {
-        this.clinicId = clinicId;
+    public void setClinicIds(Set<Long> clinicIds) {
+        this.clinicIds = clinicIds;
     }
+
 
     public String getAvailabilitySchedule() {
         return availabilitySchedule;

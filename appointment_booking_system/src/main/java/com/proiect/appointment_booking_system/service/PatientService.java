@@ -1,29 +1,55 @@
 package com.proiect.appointment_booking_system.service;
 
+import com.proiect.appointment_booking_system.dto.DoctorDTO;
 import com.proiect.appointment_booking_system.dto.PatientDTO;
+import com.proiect.appointment_booking_system.exceptions.UserAlreadyExists;
 import com.proiect.appointment_booking_system.mapper.PatientMapper;
 import com.proiect.appointment_booking_system.model.Patient;
 import com.proiect.appointment_booking_system.repository.PatientRepository;
+import com.proiect.appointment_booking_system.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 public class PatientService {
 
     @Autowired
     private PatientRepository patientRepository;
-
     @Autowired
-    private PatientMapper patientMapper;
+    private UserRepository userRepository;
+
+
 
     public void registerPatient(PatientDTO patientDTO) {
-        Patient patient = patientMapper.toEntity(patientDTO);
+        boolean user = userRepository.existsByEmail(patientDTO.getUser().getEmail());
+        if (user) {
+            throw new UserAlreadyExists();
+        }
+
+        Patient patient = PatientMapper.toEntity(patientDTO);
         patientRepository.save(patient);
     }
 
     public Optional<PatientDTO> getPatientByUserId(Long userId) {
         return patientRepository.findByUserId(userId).map(PatientMapper::toDTO);
     }
+
+    public List<PatientDTO> getAllPatients() {
+        return patientRepository.findAll().stream().map(PatientMapper::toDTO).collect(Collectors.toList());
+    }
+
+    public void updatePatient(PatientDTO patientDTO) {
+        Patient patient = PatientMapper.toEntity(patientDTO);
+        patientRepository.save(patient);
+    }
+
+    public void deletePatient(Long id) {
+        patientRepository.deleteById(id);
+    }
+
+
 }

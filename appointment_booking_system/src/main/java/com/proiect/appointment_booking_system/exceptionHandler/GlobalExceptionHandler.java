@@ -14,7 +14,7 @@ public class GlobalExceptionHandler {
             PatientNotFound.class,
             AppointmentNotFound.class,
             UserNotFoundError.class,
-            UserAlreadyExistsException.class})
+            UserAlreadyExists.class})
     public ResponseEntity handle(Exception e) {
         return ResponseEntity.badRequest().body(e.getMessage());
     }

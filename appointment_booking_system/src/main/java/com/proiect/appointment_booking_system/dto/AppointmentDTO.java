@@ -6,45 +6,45 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class AppointmentDTO {
-    private Integer id;
-    private Integer patientId;
-    private Integer doctorId;
-    private Integer clinicId;
+    private Long id;
+    private Long patientId;
+    private Long doctorId;
+    private Long clinicId;
     private LocalDate appointmentDate;
     private LocalTime appointmentTime;
     private String status;
 
     // Getters and setters
 
-    public Integer getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(Integer id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
-    public Integer getPatientId() {
+    public Long getPatientId() {
         return patientId;
     }
 
-    public void setPatientId(Integer patientId) {
+    public void setPatientId(Long patientId) {
         this.patientId = patientId;
     }
 
-    public Integer getDoctorId() {
+    public Long getDoctorId() {
         return doctorId;
     }
 
-    public void setDoctorId(Integer doctorId) {
+    public void setDoctorId(Long doctorId) {
         this.doctorId = doctorId;
     }
 
-    public Integer getClinicId() {
+    public Long getClinicId() {
         return clinicId;
     }
 
-    public void setClinicId(Integer clinicId) {
+    public void setClinicId(Long clinicId) {
         this.clinicId = clinicId;
     }
 

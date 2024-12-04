@@ -5,25 +5,31 @@ import com.proiect.appointment_booking_system.model.Clinic;
 import com.proiect.appointment_booking_system.model.Doctor;
 import org.springframework.stereotype.Component;
 
+import java.util.Set;
+import java.util.stream.Collectors;
+
 @Component
 public class DoctorMapper {
 
     public static DoctorDTO toDTO(Doctor doctor) {
         DoctorDTO doctorDTO = new DoctorDTO();
-        doctorDTO.setId(doctor.getId());
+        doctorDTO.setId(doctor.getUser().getId());
         doctorDTO.setSpecialization(doctor.getSpecialization());
         doctorDTO.setUser(UserMapper.toDTO(doctor.getUser()));
         doctorDTO.setAvailabilitySchedule(doctor.getAvailabilitySchedule());
-        doctorDTO.setClinicId(doctor.getClinic().getId());
+        doctorDTO.setClinicIds(
+                doctor.getClinics().stream()
+                        .map(Clinic::getId)
+                        .collect(Collectors.toSet())
+        );
         return doctorDTO;
     }
 
-    public static Doctor toEntity(DoctorDTO doctorDTO, Clinic clinic) {
+    public static Doctor toEntity(DoctorDTO doctorDTO, Set<Clinic> clinics) {
         Doctor doctor = new Doctor();
         doctor.setUser(UserMapper.toEntity(doctorDTO.getUser()));
-        doctor.setId(doctorDTO.getId());
         doctor.setAvailabilitySchedule(doctorDTO.getAvailabilitySchedule());
-        doctor.setClinic(clinic);
+        doctor.setClinics(clinics);
         doctor.setSpecialization(doctorDTO.getSpecialization());
         return doctor;
     }

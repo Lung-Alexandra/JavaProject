@@ -12,8 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -52,7 +51,7 @@ public class ClinicService {
     }
 
     // Adaugă un doctor la o clinică
-    public void addDoctorToClinic(Integer clinicId, Integer doctorId) {
+    public void addDoctorToClinic(Long clinicId, Long doctorId) {
         Clinic clinic = clinicRepository.findById(clinicId)
                 .orElseThrow(ClinicNotFound::new);
 
@@ -63,7 +62,7 @@ public class ClinicService {
     }
 
     // Obține lista de doctori dintr-o clinică
-    public List<Doctor> getDoctorsByClinicId(Long clinicId) {
+    public Set<Doctor> getDoctorsByClinicId(Long clinicId) {
         Clinic clinic = clinicRepository.findById(clinicId)
                 .orElseThrow(ClinicNotFound::new);
         return clinic.getDoctors();
