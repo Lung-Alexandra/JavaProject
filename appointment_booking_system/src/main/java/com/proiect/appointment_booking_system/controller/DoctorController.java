@@ -38,4 +38,8 @@ public class DoctorController {
         doctorService.deleteDoctorById(id);
         return ResponseEntity.ok("Doctor deleted successfully");
     }
+    @GetMapping("/specialization")
+    public ResponseEntity<List<DoctorDTO>> searchDoctorsBySpecialization(@RequestParam String specialization) {
+        return ResponseEntity.ok(doctorService.searchDoctorsBySpecialization(specialization));
+    }
 }

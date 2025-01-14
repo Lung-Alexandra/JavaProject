@@ -87,6 +87,135 @@ Entities and Relationships:
 
 
 
+10 Business Requirements:
+
+### 1. Patient, Doctor, Clinic Management
+
+
+System must allow patients to register and maintain personal profiles
+System must securely store patient medical history
+System must track patient appointment history
+
+
+System must support doctor registration with specializations
+System must maintain doctor schedules and availability
+Doctors must be able to work at multiple clinics
+
+
+System must allow registration of multiple clinics
+Each clinic must maintain its own roster of doctors
+System must track clinic contact information and location
+
+
+### 2.Appointment Scheduling
+
+
+System must allow patients to book appointments with specific doctors
+System must prevent double-booking of doctors
+Appointments must include date, time, and status tracking
+
+
+### 3.Notification System
+
+
+System must send appointment confirmations
+System must notify patients of upcoming appointments
+System must alert relevant parties of appointment cancellations
+
+
+### 4.User Authentication & Authorization
+
+
+System must support different user roles (Patient, Doctor, Admin)
+System must secure sensitive medical information
+System must validate user credentials
+
+
+### 5.Availability Management
+
+
+System must track doctor availability across different clinics
+System must handle scheduling conflicts
+System must support different time slots for appointments
+
+
+### 6.Medical Records
+
+
+System must maintain patient medical history
+System must ensure privacy of medical records
+System must allow appropriate access to medical information
+
+
+### 7.Search & Filter Functionality -- de facut 
+
+
+System must allow searching for doctors by specialization
+System must allow filtering clinics by location
+System must support appointment search by date/time
+
+
+### 8.Data Validation & Integrity
+
+
+System must validate all input data
+System must maintain referential integrity
+System must prevent invalid appointment states
+
+### 9.Doctor Transfer
+System must allow doctors to be transfered from one clinic to another
+
+### 10.Patient Appointments Tracking -- de facut
+System must allow clinics to track the number of appointments of each patient in order to give them discounts
+
+
+
+# 5 Main MVP Features:
+
+### 1.User Management System
+
+
+Registration and authentication for users (patients and doctors)
+Basic profile management
+Role-based access control
+Implementation: UserController, UserService already implemented with basic CRUD operations
+
+
+### 2.Clinic Management
+
+
+Clinic registration and profile management
+Doctor association with clinics
+Basic clinic information management
+Implementation: ClinicController, ClinicService provide required functionality
+
+
+### 3.Appointment Scheduling
+
+
+Basic appointment booking functionality
+Date and time slot management
+Appointment status tracking
+Implementation: AppointmentController, AppointmentService handle core scheduling features
+
+
+### 4.Doctor Management
+
+
+Doctor ~~registration~~ with specializations
+Multi-clinic association
+Basic availability scheduling
+Implementation: DoctorController, DoctorService manage doctor-related operations
+
+
+### 5.Notification System
+
+
+Basic appointment notifications
+Simple notification types
+Notification tracking
+Implementation: NotificationController, NotificationService handle basic notifications
+
 
 
 

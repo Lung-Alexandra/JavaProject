@@ -53,7 +53,7 @@
 {
     "name": "HealthCare Clinic",
     "location": "New York",
-    "phoneNumber": "073263294529",
+    "contactNumber": "073263294529",
     "email": "healthcare.clinic@example.com"
 }
 

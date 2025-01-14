@@ -35,9 +35,9 @@ public class PatientController {
         return ResponseEntity.ok(patientService.getAllPatients());
     }
 
-    @PutMapping("/updatePatient")
-    public ResponseEntity<String> updatePatient(@RequestBody PatientDTO patient) {
-        patientService.updatePatient(patient);
+    @PutMapping("/updatePatient/{id}")
+    public ResponseEntity<String> updatePatient(@PathVariable Long id,@RequestBody PatientDTO patient) {
+        patientService.updatePatient(id,patient);
         return ResponseEntity.ok("Patient updated successfully");
     }
 

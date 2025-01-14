@@ -13,36 +13,46 @@ import com.proiect.appointment_booking_system.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class NotificationService {
     @Autowired
-    private final NotificationRepository repository;
+    private NotificationRepository repository;
 
     @Autowired
-    private  PatientRepository patientRepository;
+    private NotificationMapper mapper;
+
+    @Autowired
+    private PatientRepository patientRepository;
 
     @Autowired
     private AppointmentRepository appointmentRepository;
 
-    private final NotificationMapper mapper;
-
-    public NotificationService(NotificationRepository repository, NotificationMapper mapper) {
-        this.repository = repository;
-        this.mapper = mapper;
-    }
 
     public List<NotificationDTO> getAllNotifications() {
         return repository.findAll().stream().map(mapper::toDTO).collect(Collectors.toList());
     }
 
+
+    // Creare notificare
     public NotificationDTO createNotification(NotificationDTO dto) {
-        Appointment appointment = appointmentRepository.findById(dto.getAppointmentId()).orElseThrow((AppointmentNotFound::new));
-        Patient patient = patientRepository.findById(dto.getPatientId()).orElseThrow(PatientNotFound::new);
+        Appointment appointment = appointmentRepository.findById(dto.getAppointmentId())
+                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+        Patient patient = patientRepository.findById(dto.getPatientId())
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
 
         Notification notification = mapper.toEntity(dto, patient, appointment);
+
         return mapper.toDTO(repository.save(notification));
+    }
+
+    // Ștergere notificare după appointment ID
+    public void deleteNotificationByAppointmentId(Long appointmentId) {
+        Notification notification = repository.findByAppointmentId(appointmentId)
+                .orElseThrow(() -> new RuntimeException("Notification not found"));
+        repository.delete(notification);
     }
 }

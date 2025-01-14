@@ -61,5 +61,15 @@ public class DoctorService {
     public List<DoctorDTO> getAllDoctors() {
         return doctorRepository.findAll().stream().map(DoctorMapper::toDTO).collect(Collectors.toList());
     }
-    
+    /**
+     * Search doctors by specialization
+     */
+    public List<DoctorDTO> searchDoctorsBySpecialization(String specialization) {
+        return doctorRepository.findBySpecialization(specialization)
+                .stream()
+                .map(DoctorMapper::toDTO)
+                .collect(Collectors.toList());
+    }
+
+
 }

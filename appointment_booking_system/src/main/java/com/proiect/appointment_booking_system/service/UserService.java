@@ -50,11 +50,35 @@ public class UserService {
     public void deleteUserById(Long id) {
         userRepository.deleteById(id);
     }
-    
-    public void updateUser(UserDTO userDTO) {
-        User user = UserMapper.toEntity(userDTO);
-        userRepository.save(user);
+
+    public void updateUser(Long id, UserDTO userDTO) {
+        // Caută utilizatorul existent în baza de date
+        User existingUser = userRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Actualizează câmpurile utilizatorului doar dacă sunt prezente în DTO
+        if (userDTO.getName() != null) {
+            existingUser.setName(userDTO.getName());
+        }
+        if (userDTO.getEmail() != null) {
+            // Verifică unicitatea email-ului
+            if (userRepository.existsByEmail(userDTO.getEmail()) && !existingUser.getEmail().equals(userDTO.getEmail())) {
+                throw new RuntimeException("Email already in use");
+            }
+            existingUser.setEmail(userDTO.getEmail());
+        }
+        if (userDTO.getPhoneNumber() != null) {
+            existingUser.setPhoneNumber(userDTO.getPhoneNumber());
+        }
+        if (userDTO.getPassword() != null) {
+            // Opțional: aplică hash pe parolă înainte de a o salva
+            existingUser.setPassword(userDTO.getPassword());
+        }
+
+        // Salvează utilizatorul actualizat
+        userRepository.save(existingUser);
     }
+
 
 
     public List<UserDTO> getAllUsers() {
@@ -62,6 +86,7 @@ public class UserService {
         List<User> users = userRepository.findAll();
 
         // Transformă lista de entități User în lista de DTO-uri UserDTO
+        // vreau sa fie vizibil si id userului  in lista de useri
         return users.stream()
                 .map(UserMapper::toDTO)
                 .collect(Collectors.toList());

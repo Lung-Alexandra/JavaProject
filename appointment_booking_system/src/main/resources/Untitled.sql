@@ -99,7 +99,10 @@ select * from patients;
 select * from clinics;
 select * from appointments;
 select * from notifications;
-#
+DELETE FROM appointments
+WHERE id = 2;
+DELETE FROM Notifications
+WHERE appointment_id = 2;
 # DROP TABLE IF EXISTS notifications;
 # DROP TABLE IF EXISTS appointments;
 # DROP TABLE IF EXISTS doctor_clinic;

@@ -1,9 +1,10 @@
 package com.proiect.appointment_booking_system.service;
 
 import com.proiect.appointment_booking_system.dto.ClinicDTO;
+import com.proiect.appointment_booking_system.dto.DoctorDTO;
 import com.proiect.appointment_booking_system.exceptions.ClinicNotFound;
-import com.proiect.appointment_booking_system.exceptions.DoctorNotFound;
 import com.proiect.appointment_booking_system.mapper.ClinicMapper;
+import com.proiect.appointment_booking_system.mapper.DoctorMapper;
 import com.proiect.appointment_booking_system.model.Clinic;
 import com.proiect.appointment_booking_system.model.Doctor;
 import com.proiect.appointment_booking_system.repository.ClinicRepository;
@@ -53,18 +54,44 @@ public class ClinicService {
     // Adaugă un doctor la o clinică
     public void addDoctorToClinic(Long clinicId, Long doctorId) {
         Clinic clinic = clinicRepository.findById(clinicId)
-                .orElseThrow(ClinicNotFound::new);
-
+                .orElseThrow(() -> new RuntimeException("Clinic not found"));
         Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(DoctorNotFound::new);
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
 
-        doctorRepository.save(doctor);
+        clinic.getDoctors().add(doctor);
+        doctor.getClinics().add(clinic);
+
+        clinicRepository.save(clinic);
+    }
+
+    public void removeDoctorFromClinic(Long clinicId, Long doctorId) {
+        Clinic clinic = clinicRepository.findById(clinicId)
+                .orElseThrow(() -> new RuntimeException("Clinic not found"));
+        Doctor doctor = doctorRepository.findById(doctorId)
+                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+
+        clinic.getDoctors().remove(doctor);
+        doctor.getClinics().remove(clinic);
+
+        clinicRepository.save(clinic);
     }
 
     // Obține lista de doctori dintr-o clinică
-    public Set<Doctor> getDoctorsByClinicId(Long clinicId) {
+    public List<DoctorDTO> getDoctorsByClinicId(Long clinicId) {
         Clinic clinic = clinicRepository.findById(clinicId)
                 .orElseThrow(ClinicNotFound::new);
-        return clinic.getDoctors();
+        return clinic.getDoctors().stream()
+                .map(DoctorMapper::toDTO)
+                .collect(Collectors.toList()) ;
+    }
+
+    /**
+     * Filter clinics by location
+     */
+    public List<ClinicDTO> filterClinicsByLocation(String location) {
+        return clinicRepository.findByLocation(location)
+                .stream()
+                .map(ClinicMapper::toDTO)
+                .collect(Collectors.toList());
     }
 }

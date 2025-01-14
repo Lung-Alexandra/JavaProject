@@ -49,13 +49,29 @@ public class ClinicController {
         return ResponseEntity.ok("Clinic deleted successfully");
     }
 
+
     // Endpoint pentru a obține toți doctorii dintr-o clinică
     @GetMapping("/{clinicId}/doctors")
     public ResponseEntity<List<DoctorDTO>> getDoctorsByClinicId(@PathVariable Long clinicId) {
-        List<DoctorDTO> doctorDTOS = clinicService.getDoctorsByClinicId(clinicId)
-                .stream()
-                .map(DoctorMapper::toDTO)
-                .collect(Collectors.toList());
+        List<DoctorDTO> doctorDTOS = clinicService.getDoctorsByClinicId(clinicId);
         return ResponseEntity.ok(doctorDTOS);
+    }
+
+
+    @PostMapping("/{clinicId}/doctors/{doctorId}")
+    public ResponseEntity<String> addDoctorToClinic(@PathVariable Long clinicId, @PathVariable Long doctorId) {
+        clinicService.addDoctorToClinic(clinicId, doctorId);
+        return ResponseEntity.ok("Doctor added to clinic successfully");
+    }
+
+    @DeleteMapping("/{clinicId}/doctors/{doctorId}")
+    public ResponseEntity<String> removeDoctorFromClinic(@PathVariable Long clinicId, @PathVariable Long doctorId) {
+        clinicService.removeDoctorFromClinic(clinicId, doctorId);
+        return ResponseEntity.ok("Doctor removed from clinic successfully");
+    }
+
+    @GetMapping("/filterByLocation")
+    public ResponseEntity<List<ClinicDTO>> filterClinicsByLocation(@RequestParam String location) {
+        return ResponseEntity.ok(clinicService.filterClinicsByLocation(location));
     }
 }

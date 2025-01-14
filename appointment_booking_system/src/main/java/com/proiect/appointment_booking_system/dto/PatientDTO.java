@@ -6,7 +6,6 @@ public class PatientDTO {
     private String address;
 
     // Getters and Setters
-    // ...
 
     public UserDTO getUser() {
         return user;

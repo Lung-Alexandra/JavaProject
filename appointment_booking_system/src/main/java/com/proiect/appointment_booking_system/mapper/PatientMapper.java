@@ -18,6 +18,7 @@ public class PatientMapper {
 
     public static Patient toEntity(PatientDTO patientDTO) {
         Patient patient = new Patient();
+        patient.setUser(UserMapper.toEntity(patientDTO.getUser()));
         patient.setMedicalHistory(patientDTO.getMedicalHistory());
         patient.setAddress(patientDTO.getAddress());
         return patient;

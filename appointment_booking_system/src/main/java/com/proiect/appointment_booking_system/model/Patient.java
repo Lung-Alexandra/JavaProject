@@ -11,7 +11,7 @@ public class Patient {
     //    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne(cascade = CascadeType.PERSIST)  // Cascade pentru a salva automat User
+    @OneToOne(cascade = CascadeType.ALL)  // Cascade pentru a salva automat User
     @MapsId
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

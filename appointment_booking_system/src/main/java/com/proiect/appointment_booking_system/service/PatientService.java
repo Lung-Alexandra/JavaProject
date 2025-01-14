@@ -22,6 +22,8 @@ public class PatientService {
     @Autowired
     private UserRepository userRepository;
 
+    @Autowired
+    private UserService userService;
 
 
     public void registerPatient(PatientDTO patientDTO) {
@@ -42,10 +44,17 @@ public class PatientService {
         return patientRepository.findAll().stream().map(PatientMapper::toDTO).collect(Collectors.toList());
     }
 
-    public void updatePatient(PatientDTO patientDTO) {
-        Patient patient = PatientMapper.toEntity(patientDTO);
-        patientRepository.save(patient);
+    public void updatePatient(Long id, PatientDTO patientDTO) {
+        Patient existingPatient = patientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
+
+        existingPatient.setMedicalHistory(patientDTO.getMedicalHistory());
+        existingPatient.setAddress(patientDTO.getAddress());
+
+        userService.updateUser(id, patientDTO.getUser());
+        patientRepository.save(existingPatient);
     }
+
 
     public void deletePatient(Long id) {
         patientRepository.deleteById(id);
