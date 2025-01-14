@@ -2,6 +2,7 @@ package com.proiect.appointment_booking_system.controller;
 
 import com.proiect.appointment_booking_system.dto.AppointmentDTO;
 import com.proiect.appointment_booking_system.service.AppointmentService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,7 +26,7 @@ public class AppointmentController {
     }
 
     @PostMapping
-    public ResponseEntity<String> createAppointment(@RequestBody AppointmentDTO dto) {
+    public ResponseEntity<String> createAppointment(@RequestBody @Valid AppointmentDTO dto) {
         service.createAppointment(dto);
         return  ResponseEntity.ok("Appointment created successfully");
     }

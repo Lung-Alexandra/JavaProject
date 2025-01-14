@@ -2,6 +2,7 @@ package com.proiect.appointment_booking_system.controller;
 
 import com.proiect.appointment_booking_system.dto.NotificationDTO;
 import com.proiect.appointment_booking_system.service.NotificationService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -23,7 +24,7 @@ public class NotificationController {
     }
 
     @PostMapping
-    public NotificationDTO createNotification(@RequestBody NotificationDTO dto) {
+    public NotificationDTO createNotification(@RequestBody @Valid NotificationDTO dto) {
         return service.createNotification(dto);
     }
 }

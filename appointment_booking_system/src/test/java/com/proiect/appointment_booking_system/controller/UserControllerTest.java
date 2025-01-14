@@ -2,6 +2,8 @@ package com.proiect.appointment_booking_system.controller;
 
 import com.proiect.appointment_booking_system.dto.UserDTO;
 import com.proiect.appointment_booking_system.service.UserService;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validator;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -10,7 +12,9 @@ import org.mockito.MockitoAnnotations;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Set;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -109,4 +113,5 @@ class UserControllerTest {
         assertEquals("<200 OK OK,User deleted successfully,[]>", response);
         verify(userService, times(1)).deleteUserById(1L);
     }
+
 }

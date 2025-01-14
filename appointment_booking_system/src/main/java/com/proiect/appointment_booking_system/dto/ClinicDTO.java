@@ -2,11 +2,24 @@ package com.proiect.appointment_booking_system.dto;
 
 import java.util.List;
 
+import jakarta.validation.constraints.*;
+
 public class ClinicDTO {
     private Long id;
+
+    @NotNull(message = "Clinic name cannot be null")
+    @Size(min = 2, max = 100, message = "Clinic name must be between 2 and 100 characters")
     private String name;
+
+    @NotNull(message = "Location cannot be null")
     private String location;
+
+    @NotNull(message = "Contact number cannot be null")
+    @Pattern(regexp = "\\d{10}", message = "Contact number must be 10 digits")
     private String contactNumber;
+
+    @NotNull(message = "Email cannot be null")
+    @Email(message = "Email should be valid")
     private String email;
     private List<DoctorDTO> doctors;
 

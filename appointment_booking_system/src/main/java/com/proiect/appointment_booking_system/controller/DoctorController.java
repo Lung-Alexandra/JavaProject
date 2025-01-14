@@ -2,6 +2,7 @@ package com.proiect.appointment_booking_system.controller;
 
 import com.proiect.appointment_booking_system.dto.DoctorDTO;
 import com.proiect.appointment_booking_system.service.DoctorService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,7 +17,7 @@ public class DoctorController {
     private DoctorService doctorService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerDoctor(@RequestBody DoctorDTO doctorDTO) {
+    public ResponseEntity<String> registerDoctor(@RequestBody @Valid DoctorDTO doctorDTO) {
         doctorService.registerDoctor(doctorDTO);
         return ResponseEntity.ok("Doctor registered successfully");
     }

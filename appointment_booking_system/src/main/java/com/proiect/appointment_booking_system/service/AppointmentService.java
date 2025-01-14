@@ -38,7 +38,10 @@ public class AppointmentService {
 
 
     public List<AppointmentDTO> getAllAppointments() {
-        return repository.findAll().stream().map(AppointmentMapper::toDTO).collect(Collectors.toList());
+        List<Appointment> appointments = repository.findAll();
+        return appointments.stream()
+                .map(AppointmentMapper::toDTO)
+                .collect(Collectors.toList());
     }
 
     public void createAppointment(AppointmentDTO dto) {
@@ -88,6 +91,7 @@ public class AppointmentService {
         repository.save(appointment);
 
     }
+
     @Transactional
     public void removeAllCancelledAppointments() {
         List<Appointment> cancelledAppointments = repository.findAllByStatus(Status.CANCELLED);

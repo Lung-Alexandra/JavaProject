@@ -5,6 +5,7 @@ import com.proiect.appointment_booking_system.dto.DoctorDTO;
 import com.proiect.appointment_booking_system.dto.PatientDTO;
 import com.proiect.appointment_booking_system.model.Patient;
 import com.proiect.appointment_booking_system.service.PatientService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +19,7 @@ public class PatientController {
     private PatientService patientService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerPatient(@RequestBody PatientDTO patient) {
+    public ResponseEntity<String> registerPatient(@RequestBody @Valid PatientDTO patient) {
          patientService.registerPatient(patient);
         return ResponseEntity.ok("Patient registered successfully");
     }
@@ -36,7 +37,7 @@ public class PatientController {
     }
 
     @PutMapping("/updatePatient/{id}")
-    public ResponseEntity<String> updatePatient(@PathVariable Long id,@RequestBody PatientDTO patient) {
+    public ResponseEntity<String> updatePatient(@PathVariable Long id,@RequestBody @Valid PatientDTO patient) {
         patientService.updatePatient(id,patient);
         return ResponseEntity.ok("Patient updated successfully");
     }

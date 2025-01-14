@@ -19,8 +19,6 @@ public class UserService {
     @Autowired
     private UserRepository userRepository;
 
-    @Autowired
-    private UserMapper userMapper;
 
     public void registerUser(UserDTO userDTO) {
         // Verificăm dacă utilizatorul există deja pe baza email-ului sau numărului de telefon
@@ -71,22 +69,17 @@ public class UserService {
             existingUser.setPhoneNumber(userDTO.getPhoneNumber());
         }
         if (userDTO.getPassword() != null) {
-            // Opțional: aplică hash pe parolă înainte de a o salva
             existingUser.setPassword(userDTO.getPassword());
         }
 
-        // Salvează utilizatorul actualizat
         userRepository.save(existingUser);
     }
 
 
 
     public List<UserDTO> getAllUsers() {
-        // Obține lista de utilizatori din baza de date
         List<User> users = userRepository.findAll();
 
-        // Transformă lista de entități User în lista de DTO-uri UserDTO
-        // vreau sa fie vizibil si id userului  in lista de useri
         return users.stream()
                 .map(UserMapper::toDTO)
                 .collect(Collectors.toList());

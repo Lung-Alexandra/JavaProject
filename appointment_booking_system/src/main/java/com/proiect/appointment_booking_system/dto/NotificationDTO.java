@@ -1,12 +1,28 @@
 package com.proiect.appointment_booking_system.dto;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.FutureOrPresent;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDateTime;
 
 public class NotificationDTO {
     private Long id;
+
+    @NotNull(message = "Patient ID cannot be null")
     private Long patientId;
+
+    @NotNull(message = "Appointment ID cannot be null")
     private Long appointmentId;
+
+    @NotNull(message = "Notification type cannot be null")
+    @Enumerated(EnumType.STRING)
     private String notificationType;
+
+    @NotNull(message = "Sent at cannot be null")
+    @FutureOrPresent(message = "Sent at must be in the present or future")
     private LocalDateTime sentAt;
 
     // Getters and setters

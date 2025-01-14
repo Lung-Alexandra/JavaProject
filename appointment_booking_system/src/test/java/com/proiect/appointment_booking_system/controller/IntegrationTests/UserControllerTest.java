@@ -115,4 +115,5 @@ public class UserControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("User deleted successfully"));
     }
+
 }

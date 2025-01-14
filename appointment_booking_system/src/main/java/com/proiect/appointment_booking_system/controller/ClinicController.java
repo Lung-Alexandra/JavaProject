@@ -4,6 +4,7 @@ import com.proiect.appointment_booking_system.dto.ClinicDTO;
 import com.proiect.appointment_booking_system.dto.DoctorDTO;
 import com.proiect.appointment_booking_system.mapper.DoctorMapper;
 import com.proiect.appointment_booking_system.service.ClinicService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -19,7 +20,7 @@ public class ClinicController {
     private ClinicService clinicService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerClinic(@RequestBody ClinicDTO clinicDTO) {
+    public ResponseEntity<String> registerClinic(@RequestBody @Valid ClinicDTO clinicDTO) {
         clinicService.registerClinic(clinicDTO);
         return ResponseEntity.ok("Clinic registered successfully");
     }

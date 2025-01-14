@@ -1,17 +1,33 @@
 package com.proiect.appointment_booking_system.dto;
 
 import com.proiect.appointment_booking_system.enums.Status;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.validation.constraints.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
 
 public class AppointmentDTO {
     private Long id;
+
+    @NotNull(message = "Patient ID cannot be null")
     private Long patientId;
+
+    @NotNull(message = "Doctor ID cannot be null")
     private Long doctorId;
+
+    @NotNull(message = "Clinic ID cannot be null")
     private Long clinicId;
+
+    @NotNull(message = "Appointment date cannot be null")
+    @Future(message = "Appointment date must be in the future")
     private LocalDate appointmentDate;
+
+    @NotNull(message = "Appointment time cannot be null")
     private LocalTime appointmentTime;
+
+    @Enumerated(EnumType.STRING)
     private String status;
 
     // Getters and setters
@@ -70,5 +86,14 @@ public class AppointmentDTO {
 
     public void setStatus(String status) {
         this.status = status;
+    }
+
+    public void setStatus(Status status) {
+        this.status = status.toString();
+    }
+
+    @Override
+    public String toString() {
+        return status ;
     }
 }

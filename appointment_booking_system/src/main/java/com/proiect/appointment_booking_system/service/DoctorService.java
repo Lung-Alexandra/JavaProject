@@ -49,9 +49,6 @@ public class DoctorService {
         return doctorRepository.findByUserId(userId).map(DoctorMapper::toDTO);
     }
 
-//    public Optional<DoctorDTO> getDoctorById(Long id) {
-//        return doctorRepository.findById(id).map(DoctorMapper::toDTO);
-//    }
 
     public void deleteDoctorById(Long id) {
         doctorRepository.deleteById(id);
@@ -61,6 +58,7 @@ public class DoctorService {
     public List<DoctorDTO> getAllDoctors() {
         return doctorRepository.findAll().stream().map(DoctorMapper::toDTO).collect(Collectors.toList());
     }
+
     /**
      * Search doctors by specialization
      */
