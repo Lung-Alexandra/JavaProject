@@ -100,9 +100,9 @@ select * from clinics;
 select * from appointments;
 select * from notifications;
 DELETE FROM appointments
-WHERE id = 2;
+WHERE id = 5;
 DELETE FROM Notifications
-WHERE appointment_id = 2;
+WHERE appointment_id = 5;
 # DROP TABLE IF EXISTS notifications;
 # DROP TABLE IF EXISTS appointments;
 # DROP TABLE IF EXISTS doctor_clinic;

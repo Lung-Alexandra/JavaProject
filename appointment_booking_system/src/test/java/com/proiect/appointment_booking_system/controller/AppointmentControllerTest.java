@@ -79,4 +79,13 @@ class AppointmentControllerTest {
         assertEquals(5L, result.get(1L));
         verify(appointmentService, times(1)).trackPatientAppointments();
     }
+    @Test
+    void testRemoveAllCancelledAppointments() {
+        doNothing().when(appointmentService).removeAllCancelledAppointments();
+
+        var response = appointmentController.removeAllCancelledAppointments();
+
+        assertEquals("<200 OK OK,All cancelled appointments have been removed successfully,[]>", response.toString());
+        verify(appointmentService, times(1)).removeAllCancelledAppointments();
+    }
 }

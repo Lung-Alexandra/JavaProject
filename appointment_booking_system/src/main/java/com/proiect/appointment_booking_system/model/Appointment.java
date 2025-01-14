@@ -2,6 +2,7 @@ package com.proiect.appointment_booking_system.model;
 
 import com.proiect.appointment_booking_system.enums.Status;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Future;
 
 import java.time.*;
 
@@ -24,7 +25,9 @@ public class Appointment {
     @JoinColumn(name = "clinic_id", nullable = false)
     private Clinic clinic;
 
+    @Future(message = "Appointment date must be in the future")
     private LocalDate appointmentDate;
+
     private LocalTime appointmentTime;
 
     @Enumerated(EnumType.STRING)
@@ -32,7 +35,7 @@ public class Appointment {
     private Status status; // E.g., "BOOKED", "CANCELLED", "COMPLETED"
 
 
-    @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "appointment", cascade = CascadeType.ALL)
     private Notification notification;
 
 
@@ -92,5 +95,8 @@ public class Appointment {
 
     public void setStatus(Status status) {
         this.status = status;
+    }
+    public void setNotification(Notification notification) {
+        this.notification = notification;
     }
 }

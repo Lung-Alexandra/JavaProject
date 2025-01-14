@@ -3,6 +3,8 @@ package com.proiect.appointment_booking_system.model;
 
 import com.proiect.appointment_booking_system.enums.Role;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.Pattern;
 
 
 @Entity
@@ -14,13 +16,14 @@ public class User {
 
     @Column(nullable = false)
     private String name;
-
+    @Email(message = "Invalid email format")
     @Column(nullable = false, unique = true)
     private String email;
 
     @Column(nullable = false)
     private String password;
 
+    @Pattern(regexp = "\\+?[0-9]{10,15}", message = "Invalid phone number format")
     @Column(nullable = false)
     private String phoneNumber;
 

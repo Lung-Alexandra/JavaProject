@@ -38,4 +38,10 @@ public class AppointmentController {
     public ResponseEntity<Map<Long, Long>> trackPatientAppointments() {
         return ResponseEntity.ok(service.trackPatientAppointments());
     }
+    @DeleteMapping("/remove-cancelled")
+    public ResponseEntity<String> removeAllCancelledAppointments() {
+        service.removeAllCancelledAppointments();
+        return ResponseEntity.ok("All cancelled appointments have been removed successfully");
+    }
+
 }

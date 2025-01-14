@@ -14,6 +14,7 @@ import com.proiect.appointment_booking_system.repository.DoctorRepository;
 import com.proiect.appointment_booking_system.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -71,6 +72,7 @@ public class AppointmentService {
         );
     }
 
+    @Transactional
     public void cancelAppointment(Long appointmentId) {
 
         Appointment appointment = repository.findById(appointmentId)
@@ -79,11 +81,17 @@ public class AppointmentService {
         try {
             notificationService.deleteNotificationByAppointmentId(appointmentId);
         } catch (RuntimeException e) {
-            throw new RuntimeException("No notification found for appointment ID " + appointmentId);
+            throw new RuntimeException("No notification found for appointment ");
         }
 
         appointment.setStatus(Status.CANCELLED);
         repository.save(appointment);
 
     }
+    @Transactional
+    public void removeAllCancelledAppointments() {
+        List<Appointment> cancelledAppointments = repository.findAllByStatus(Status.CANCELLED);
+        repository.deleteAll(cancelledAppointments);
+    }
+
 }

@@ -57,6 +57,8 @@ public class PatientService {
 
 
     public void deletePatient(Long id) {
+        Patient existingPatient = patientRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Patient not found"));
         patientRepository.deleteById(id);
     }
 

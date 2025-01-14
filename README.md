@@ -5,10 +5,6 @@ built using Java Spring Boot. It will allow patients to schedule appointments
 with healthcare providers, view available time slots, and receive reminders 
 while offering clinics tools for managing appointments efficiently.
 
-###  10 Business Requirements
-
-
-
 
 ### Databese's Schema
 Diagram containing the 6 entities and the relationships between them. 
@@ -59,163 +55,211 @@ Entities and Relationships:
 
 
 
-1. REST Endpoints
-   - Doctor
-       1. `GET /doctors`
-         - Returns a list of all doctors.
-       2. `GET /doctors/{id}`
-          - Returns a specific doctor by ID.
-       3. `POST /doctors/reggister`
-          - Registers a new doctor.
-       4. `DELETE /doctors/{id}` 
-          - Deletes a doctor by ID.
-    - Clinic
-       1. `GET /clinics`
-          - Returns a list of all clinics.
-       2. `GET /clinics/{id}`
-          - Returns a specific clinic by ID.
-       3. `GET /clinics/email` 
-          - Returns a specific clinic by email. 
-       4. `POST /clinics/register`
-          - Registers a new clinic.
-       5. `DELETE /clinics/{id}`
-          - Deletes a clinic by ID.
-       6. `GET /clinics/{clinicId}/doctors`
-          - Returns a list of doctors working at a specific clinic.
-       7. `DELETE /clinics/{id}`
-          - Removes a clinic.
+## 10 Business Requirements:
+
+### 1. *** Patient, Doctor, Clinic Management***
+
+- **Requirement**: The system must allow patients to register, maintain personal profiles, and track their appointment and medical history.
+- **Mapped Features**:
+    - Registration and authentication (User Management System).
+    - Medical history storage (Patient entity).
+    - Appointment tracking (Appointment entity).
+
+- **Requirement**: The system must support doctor registration with specializations and availability scheduling.
+- **Mapped Features**:
+    - Multi-clinic association (Doctor and Clinic entities).
+    - Availability management (Doctor entity).
+
+- **Requirement**: Clinics must be able to register, manage doctor rosters, and maintain contact information.
+- **Mapped Features**:
+    - Clinic profile management (Clinic entity).
+    - Association with doctors (Many-to-Many relationship between Doctor and Clinic entities).
+
+
+### 2. **Appointment Scheduling**
+- **Requirement**: Patients must be able to book appointments with specific doctors at specified time slots, avoiding conflicts.
+- **Mapped Features**:
+    - Appointment creation and status tracking (Appointment entity).
+    - Validation of doctor availability (Doctor entity).
+
+
+### 3.**Notification System**
+- **Requirement**: Notifications must inform patients about appointment confirmations, reminders, and cancellations.
+- **Mapped Features**:
+    - Notification entity linked to Appointment and Patient.
+    - Automated notifications triggered on appointment status changes.
+
+
+### 4.**User Authentication & Authorization**
+- **Requirement**: The system must secure sensitive medical information and support role-based access control.
+- **Mapped Features**:
+    - User roles (Patient, Doctor, Admin).
+    - Authentication and authorization (User entity).
 
+
+### 5. **Availability Management**
+- **Requirement**: The system must track doctor availability across clinics, handle scheduling conflicts, and support different appointment time slots.
+- **Mapped Features**:
+    - Availability schedules (Doctor entity).
+    - Time slot validation (Appointment entity).
+    - Conflict resolution logic (AppointmentService).
 
+### 6. **Medical Records**
+- **Requirement**: The system must maintain and secure patient medical records while allowing appropriate access.
+- **Mapped Features**:
+    - Medical history storage (Patient entity).
+    - Access controls for sensitive data (User roles and permissions).
+    - Secure storage and retrieval mechanisms (PatientService).
+
 
-10 Business Requirements:
+### 7. **Doctor Search and Clinic Filtering**
+- **Requirement**: Users must be able to search for doctors by specialization and filter clinics by location.
+- **Mapped Features**:
+    - Search functionality (DoctorController).
+    - Filtering clinics (ClinicController).
 
-### 1. Patient, Doctor, Clinic Management
 
+### 8. **Data Validation and Integrity**
+- **Requirement**: All user inputs and system processes must adhere to validation rules and maintain data consistency.
+- **Mapped Features**:
+    - Input validation (DTO and model validation annotations).
+    - Referential integrity in the database (JPA relationships).
 
-System must allow patients to register and maintain personal profiles
-System must securely store patient medical history
-System must track patient appointment history
+### 9.**Doctor Transfer Management**
+- **Requirement**: The system must allow doctors to be transferred between clinics.
+- **Mapped Features**:
+    - Modification of doctor-clinic associations (ClinicService).
 
+### 10.**Patient Appointment Tracking for Discounts**
+- **Requirement**: Clinics must be able to track the number of appointments per patient for discount purposes.
+- **Mapped Features**:
+    - Appointment tracking and count (AppointmentService).
+    - Reporting for patient-specific metrics.
 
-System must support doctor registration with specializations
-System must maintain doctor schedules and availability
-Doctors must be able to work at multiple clinics
+# 5 Main MVP Features
 
+### 1. **User Management System**
+- **Description**: Enables patients and doctors to register, authenticate, and manage their profiles.
+- **Key Functionalities**:
+    - User registration with role-based access control (Patient, Doctor).
+    - Profile management (basic details like name, email, phone).
+- **Implementation**:
+    - `UserController`, `UserService`, `UserRepository` for managing CRUD operations.
+
+
+### 2. **Clinic Management**
+- **Description**: Allows registration and management of clinics, including their rosters of doctors.
+- **Key Functionalities**:
+    - Clinic profile creation (name, location, contact details).
+    - Association with doctors (many-to-many relationship).
+    - Retrieval of clinics by location.
+- **Implementation**:
+    - `ClinicController`, `ClinicService`, `ClinicRepository` for operations.
 
-System must allow registration of multiple clinics
-Each clinic must maintain its own roster of doctors
-System must track clinic contact information and location
 
+### 3. **Appointment Scheduling**
+- **Description**: Enables patients to book and manage appointments with doctors at specific clinics.
+- **Key Functionalities**:
+    - Appointment creation with date, time, and doctor selection.
+    - Status tracking for appointments (e.g., Booked, Cancelled, Completed).
+    - Prevention of scheduling conflicts through availability checks.
+- **Implementation**:
+    - `AppointmentController`, `AppointmentService`, `AppointmentRepository` for handling logic.
 
-### 2.Appointment Scheduling
 
+### 4. **Doctor Management**
+- **Description**: Facilitates doctor registration, specialization management, and availability scheduling.
+- **Key Functionalities**:
+    - Register doctors with specializations.
+    - Associate doctors with multiple clinics.
+    - Define and update availability schedules.
+- **Implementation**:
+    - `DoctorController`, `DoctorService`, `DoctorRepository` for CRUD operations.
 
-System must allow patients to book appointments with specific doctors
-System must prevent double-booking of doctors
-Appointments must include date, time, and status tracking
 
+### 5. **Notification System**
+- **Description**: Sends automated notifications to patients for appointment confirmations, reminders, and cancellations.
+- **Key Functionalities**:
+    - Generate notifications upon appointment status updates.
+    - Send reminders 24 hours before scheduled appointments.
+- **Implementation**:
+    - `NotificationController`, `NotificationService`, `NotificationRepository` to manage notifications.
 
-### 3.Notification System
 
 
-System must send appointment confirmations
-System must notify patients of upcoming appointments
-System must alert relevant parties of appointment cancellations
+# API Documentation for Online Appointment Booking System
 
 
-### 4.User Authentication & Authorization
+## **Patient Controller**
 
+| HTTP Method | Endpoint                            | Description                        |
+|-------------|-------------------------------------|------------------------------------|
+| `PUT`       | `/patients/updatePatient/{id}`      | Update an existing patient by ID.  |
+| `POST`      | `/patients/register`                | Register a new patient.            |
+| `GET`       | `/patients`                         | Retrieve all patients.             |
+| `GET`       | `/patients/{id}`                    | Retrieve a specific patient by ID. |
+| `DELETE`    | `/patients/{id}`                    | Delete a patient by ID.            |
 
-System must support different user roles (Patient, Doctor, Admin)
-System must secure sensitive medical information
-System must validate user credentials
+---
 
+## **User Controller**
 
-### 5.Availability Management
+| HTTP Method | Endpoint           | Description                         |
+|-------------|--------------------|-------------------------------------|
+| `POST`      | `/users/register`  | Register a new user.                |
+| `GET`       | `/users`           | Retrieve all users.                 |
+| `GET`       | `/users/{id}`      | Retrieve a specific user by ID.     |
+| `DELETE`    | `/users/{id}`      | Delete a user by ID.                |
 
+---
 
-System must track doctor availability across different clinics
-System must handle scheduling conflicts
-System must support different time slots for appointments
+## **Notification Controller**
 
+| HTTP Method | Endpoint          | Description                         |
+|-------------|-------------------|-------------------------------------|
+| `GET`       | `/notifications`  | Retrieve all notifications.         |
+| `POST`      | `/notifications`  | Create a new notification.          |
 
-### 6.Medical Records
+---
 
+## **Doctor Controller**
 
-System must maintain patient medical history
-System must ensure privacy of medical records
-System must allow appropriate access to medical information
+| HTTP Method | Endpoint                     | Description                                    |
+|-------------|------------------------------|------------------------------------------------|
+| `POST`      | `/doctors/register`          | Register a new doctor.                         |
+| `GET`       | `/doctors`                   | Retrieve all doctors.                          |
+| `GET`       | `/doctors/{id}`              | Retrieve a specific doctor by ID.              |
+| `DELETE`    | `/doctors/{id}`              | Delete a doctor by ID.                         |
+| `GET`       | `/doctors/specialization`    | Search for doctors by specialization.          |
 
+---
 
-### 7.Search & Filter Functionality -- de facut 
+## **Clinic Controller**
 
+| HTTP Method | Endpoint                                        | Description                                     |
+|-------------|-------------------------------------------------|-------------------------------------------------|
+| `POST`      | `/clinics/{clinicId}/doctors/{doctorId}`        | Associate a doctor with a clinic.               |
+| `DELETE`    | `/clinics/{clinicId}/doctors/{doctorId}`        | Remove a doctor from a clinic.                  |
+| `POST`      | `/clinics/register`                             | Register a new clinic.                          |
+| `GET`       | `/clinics`                                      | Retrieve all clinics.                           |
+| `GET`       | `/clinics/{id}`                                 | Retrieve a specific clinic by ID.               |
+| `DELETE`    | `/clinics/{id}`                                 | Delete a clinic by ID.                          |
+| `GET`       | `/clinics/{clinicId}/doctors`                   | Retrieve all doctors associated with a clinic.  |
+| `GET`       | `/clinics/filterByLocation`                     | Filter clinics by location.                     |
+| `GET`       | `/clinics/email`                                | Retrieve clinic details by email.               |
 
-System must allow searching for doctors by specialization
-System must allow filtering clinics by location
-System must support appointment search by date/time
+---
 
+## **Appointment Controller**
 
-### 8.Data Validation & Integrity
+| HTTP Method | Endpoint                                  | Description                                         |
+|-------------|-------------------------------------------|-----------------------------------------------------|
+| `GET`       | `/appointments`                           | Retrieve all appointments.                          |
+| `POST`      | `/appointments`                           | Create a new appointment.                           |
+| `GET`       | `/appointments/patients`                  | Track appointments for specific patients.           |
+| `DELETE`    | `/appointments/{appointmentId}/cancel`    | Cancel a specific appointment by ID.                |
+| `DELETE`    | `/appointments/remove-cancelled`          | Remove all cancelled appointments.                  |
 
+---
 
-System must validate all input data
-System must maintain referential integrity
-System must prevent invalid appointment states
-
-### 9.Doctor Transfer
-System must allow doctors to be transfered from one clinic to another
-
-### 10.Patient Appointments Tracking -- de facut
-System must allow clinics to track the number of appointments of each patient in order to give them discounts
-
-
-
-# 5 Main MVP Features:
-
-### 1.User Management System
-
-
-Registration and authentication for users (patients and doctors)
-Basic profile management
-Role-based access control
-Implementation: UserController, UserService already implemented with basic CRUD operations
-
-
-### 2.Clinic Management
-
-
-Clinic registration and profile management
-Doctor association with clinics
-Basic clinic information management
-Implementation: ClinicController, ClinicService provide required functionality
-
-
-### 3.Appointment Scheduling
-
-
-Basic appointment booking functionality
-Date and time slot management
-Appointment status tracking
-Implementation: AppointmentController, AppointmentService handle core scheduling features
-
-
-### 4.Doctor Management
-
-
-Doctor ~~registration~~ with specializations
-Multi-clinic association
-Basic availability scheduling
-Implementation: DoctorController, DoctorService manage doctor-related operations
-
-
-### 5.Notification System
-
-
-Basic appointment notifications
-Simple notification types
-Notification tracking
-Implementation: NotificationController, NotificationService handle basic notifications
-
-
-
-
+- Use [Swagger UI](http://localhost:8080/swagger-ui.html) for detailed API exploration and testing.
