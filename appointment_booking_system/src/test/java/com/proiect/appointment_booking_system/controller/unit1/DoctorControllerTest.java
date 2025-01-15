@@ -1,5 +1,6 @@
-package com.proiect.appointment_booking_system.controller;
+package com.proiect.appointment_booking_system.controller.unit1;
 
+import com.proiect.appointment_booking_system.controller.DoctorController;
 import com.proiect.appointment_booking_system.dto.DoctorDTO;
 import com.proiect.appointment_booking_system.service.DoctorService;
 import org.junit.jupiter.api.BeforeEach;
@@ -56,6 +57,7 @@ class DoctorControllerTest {
         assertEquals(1L, result.getBody().getId());
         verify(doctorService, times(1)).getDoctorByUserId(1L);
     }
+
 
     @Test
     void testGetDoctorById_NotFound() {

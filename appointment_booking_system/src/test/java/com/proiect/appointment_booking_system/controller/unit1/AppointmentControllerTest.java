@@ -1,6 +1,7 @@
 
-package com.proiect.appointment_booking_system.controller;
+package com.proiect.appointment_booking_system.controller.unit1;
 
+import com.proiect.appointment_booking_system.controller.AppointmentController;
 import com.proiect.appointment_booking_system.dto.*;
 import com.proiect.appointment_booking_system.service.*;
 import org.junit.jupiter.api.BeforeEach;

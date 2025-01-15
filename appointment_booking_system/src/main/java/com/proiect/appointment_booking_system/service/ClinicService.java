@@ -3,6 +3,7 @@ package com.proiect.appointment_booking_system.service;
 import com.proiect.appointment_booking_system.dto.ClinicDTO;
 import com.proiect.appointment_booking_system.dto.DoctorDTO;
 import com.proiect.appointment_booking_system.exceptions.ClinicNotFound;
+import com.proiect.appointment_booking_system.exceptions.DoctorNotFound;
 import com.proiect.appointment_booking_system.mapper.ClinicMapper;
 import com.proiect.appointment_booking_system.mapper.DoctorMapper;
 import com.proiect.appointment_booking_system.model.Clinic;
@@ -54,9 +55,9 @@ public class ClinicService {
     // Adaugă un doctor la o clinică
     public void addDoctorToClinic(Long clinicId, Long doctorId) {
         Clinic clinic = clinicRepository.findById(clinicId)
-                .orElseThrow(() -> new RuntimeException("Clinic not found"));
+                .orElseThrow(ClinicNotFound::new);
         Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+                .orElseThrow(DoctorNotFound::new);
 
         clinic.getDoctors().add(doctor);
         doctor.getClinics().add(clinic);
@@ -66,9 +67,9 @@ public class ClinicService {
 
     public void removeDoctorFromClinic(Long clinicId, Long doctorId) {
         Clinic clinic = clinicRepository.findById(clinicId)
-                .orElseThrow(() -> new RuntimeException("Clinic not found"));
+                .orElseThrow(ClinicNotFound::new);
         Doctor doctor = doctorRepository.findById(doctorId)
-                .orElseThrow(() -> new RuntimeException("Doctor not found"));
+                .orElseThrow(DoctorNotFound::new);
 
         clinic.getDoctors().remove(doctor);
         doctor.getClinics().remove(clinic);

@@ -3,6 +3,7 @@ package com.proiect.appointment_booking_system.service;
 import com.proiect.appointment_booking_system.dto.AppointmentDTO;
 import com.proiect.appointment_booking_system.dto.NotificationDTO;
 import com.proiect.appointment_booking_system.enums.Status;
+import com.proiect.appointment_booking_system.exceptions.AppointmentNotFound;
 import com.proiect.appointment_booking_system.exceptions.ClinicNotFound;
 import com.proiect.appointment_booking_system.exceptions.DoctorNotFound;
 import com.proiect.appointment_booking_system.exceptions.PatientNotFound;
@@ -79,7 +80,7 @@ public class AppointmentService {
     public void cancelAppointment(Long appointmentId) {
 
         Appointment appointment = repository.findById(appointmentId)
-                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+                .orElseThrow(AppointmentNotFound::new);
 
         try {
             notificationService.deleteNotificationByAppointmentId(appointmentId);

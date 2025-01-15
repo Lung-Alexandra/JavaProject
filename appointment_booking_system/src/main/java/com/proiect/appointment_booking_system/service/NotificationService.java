@@ -1,6 +1,8 @@
 package com.proiect.appointment_booking_system.service;
 
 import com.proiect.appointment_booking_system.dto.NotificationDTO;
+import com.proiect.appointment_booking_system.exceptions.AppointmentNotFound;
+import com.proiect.appointment_booking_system.exceptions.PatientNotFound;
 import com.proiect.appointment_booking_system.mapper.NotificationMapper;
 import com.proiect.appointment_booking_system.model.Appointment;
 import com.proiect.appointment_booking_system.model.Notification;
@@ -37,9 +39,9 @@ public class NotificationService {
     // Creare notificare
     public NotificationDTO createNotification(NotificationDTO dto) {
         Appointment appointment = appointmentRepository.findById(dto.getAppointmentId())
-                .orElseThrow(() -> new RuntimeException("Appointment not found"));
+                .orElseThrow(AppointmentNotFound::new);
         Patient patient = patientRepository.findById(dto.getPatientId())
-                .orElseThrow(() -> new RuntimeException("Patient not found"));
+                .orElseThrow(PatientNotFound::new);
 
         Notification notification = mapper.toEntity(dto, patient, appointment);
 
