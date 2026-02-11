@@ -93,7 +93,7 @@ public class NotificationService {
 
         List<Notification> dueNotifications =
                 repository.findBySentAtLessThanEqualAndDeliveredFalse(LocalDateTime.now());
-        Logger.info("Found {} due notifications to send.", dueNotifications.size());
+        LOGGER.info("Found {} due notifications to send.", dueNotifications.size());
         for (Notification notification : dueNotifications) {
             sendReminderEmail(notification);
         }
@@ -122,7 +122,7 @@ public class NotificationService {
         message.setText(buildReminderBody(notification));
 
         try {
-            Logger.info("Sending reminder email for notification {} to {}.", notification.getId(), recipient);
+            LOGGER.info("Sending reminder email for notification {} to {}.", notification.getId(), recipient);
             mailSender.send(message);
             notification.setDelivered(true);
             notification.setDeliveredAt(LocalDateTime.now());
