@@ -15,6 +15,7 @@ public class MockService {
         dto.setPatientId(101L);
         dto.setDoctorId(201L);
         dto.setClinicId(301L);
+        dto.setDurationMinutes(30);
         dto.setStatus("BOOKED");
         return dto;
     }

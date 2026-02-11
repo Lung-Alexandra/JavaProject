@@ -25,6 +25,11 @@ public class AppointmentController {
         return service.getAllAppointments();
     }
 
+    @GetMapping("/mine")
+    public List<AppointmentDTO> getMyAppointments() {
+        return service.getAppointmentsForCurrentUser();
+    }
+
     @PostMapping
     public ResponseEntity<String> createAppointment(@RequestBody @Valid AppointmentDTO dto) {
         service.createAppointment(dto);

@@ -17,6 +17,7 @@ public class AppointmentMapper {
         appointmentDto.setClinicId(appointment.getClinic().getId());
         appointmentDto.setAppointmentDate(appointment.getAppointmentDate());
         appointmentDto.setAppointmentTime(appointment.getAppointmentTime());
+        appointmentDto.setDurationMinutes(appointment.getDurationMinutes());
         appointmentDto.setStatus(appointment.getStatus().toString());
         return appointmentDto;
     }
@@ -29,6 +30,7 @@ public class AppointmentMapper {
         appointment.setClinic(clinic);
         appointment.setAppointmentDate(appointmentDto.getAppointmentDate());
         appointment.setAppointmentTime(appointmentDto.getAppointmentTime());
+        appointment.setDurationMinutes(appointmentDto.getDurationMinutes());
         appointment.setStatus(appointmentDto.getStatus());
         return appointment;
     }

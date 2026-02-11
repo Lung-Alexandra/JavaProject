@@ -15,6 +15,8 @@ public class NotificationMapper {
         dto.setAppointmentId(notification.getAppointment().getId());
         dto.setNotificationType(notification.getNotificationType());
         dto.setSentAt(notification.getSentAt());
+        dto.setDelivered(notification.isDelivered());
+        dto.setDeliveredAt(notification.getDeliveredAt());
         return dto;
     }
 
@@ -25,6 +27,8 @@ public class NotificationMapper {
         notification.setAppointment(appointment);
         notification.setNotificationType(dto.getNotificationType());
         notification.setSentAt(dto.getSentAt());
+        notification.setDelivered(dto.isDelivered());
+        notification.setDeliveredAt(dto.getDeliveredAt());
         return notification;
     }
 }

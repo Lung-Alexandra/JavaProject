@@ -1,9 +1,7 @@
 package com.proiect.appointment_booking_system.dto;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.validation.constraints.FutureOrPresent;
 import jakarta.validation.constraints.NotNull;
 
 import java.time.LocalDateTime;
@@ -21,9 +19,9 @@ public class NotificationDTO {
     @Enumerated(EnumType.STRING)
     private String notificationType;
 
-//    @NotNull(message = "Sent at cannot be null")
-//    @FutureOrPresent(message = "Sent at must be in the present or future")
     private LocalDateTime sentAt;
+    private boolean delivered;
+    private LocalDateTime deliveredAt;
 
     // Getters and setters
 
@@ -65,5 +63,21 @@ public class NotificationDTO {
 
     public void setSentAt(LocalDateTime sentAt) {
         this.sentAt = sentAt;
+    }
+
+    public boolean isDelivered() {
+        return delivered;
+    }
+
+    public void setDelivered(boolean delivered) {
+        this.delivered = delivered;
+    }
+
+    public LocalDateTime getDeliveredAt() {
+        return deliveredAt;
+    }
+
+    public void setDeliveredAt(LocalDateTime deliveredAt) {
+        this.deliveredAt = deliveredAt;
     }
 }

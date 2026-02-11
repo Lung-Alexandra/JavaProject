@@ -27,6 +27,10 @@ public class AppointmentDTO {
     @NotNull(message = "Appointment time cannot be null")
     private LocalTime appointmentTime;
 
+    @Min(value = 5, message = "Duration must be at least 5 minutes")
+    @Max(value = 480, message = "Duration must be at most 480 minutes")
+    private Integer durationMinutes;
+
     @Enumerated(EnumType.STRING)
     private String status;
 
@@ -80,8 +84,19 @@ public class AppointmentDTO {
         this.appointmentTime = appointmentTime;
     }
 
+    public Integer getDurationMinutes() {
+        return durationMinutes;
+    }
+
+    public void setDurationMinutes(Integer durationMinutes) {
+        this.durationMinutes = durationMinutes;
+    }
+
     public Status getStatus() {
-        return Status.valueOf(status);
+        if (status == null || status.isBlank()) {
+            return null;
+        }
+        return Status.valueOf(status.trim().toUpperCase());
     }
 
     public void setStatus(String status) {

@@ -10,4 +10,5 @@ import java.util.Optional;
 public interface PatientRepository extends JpaRepository<Patient, Long> {
     Optional<Patient> findByUserName(String userName);
     Optional<Patient> findByUserId(Long userId);
+    Optional<Patient> findByUserEmail(String email);
 }

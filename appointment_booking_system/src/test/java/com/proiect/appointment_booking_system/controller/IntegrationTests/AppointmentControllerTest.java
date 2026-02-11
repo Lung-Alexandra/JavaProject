@@ -36,6 +36,7 @@ public class AppointmentControllerTest {
         appointment1.setId(1L);
         appointment1.setAppointmentDate(LocalDate.of(2025, 1, 10));
         appointment1.setAppointmentTime(LocalTime.of(10, 0));
+        appointment1.setDurationMinutes(30);
         appointment1.setDoctorId(1L);
         appointment1.setPatientId(1L);
         appointment1.setStatus(Status.BOOKED.name());
@@ -44,6 +45,7 @@ public class AppointmentControllerTest {
         appointment2.setId(2L);
         appointment2.setAppointmentDate(LocalDate.of(2025, 1, 10));
         appointment2.setAppointmentTime(LocalTime.of(11, 0));
+        appointment2.setDurationMinutes(45);
         appointment2.setDoctorId(2L);
         appointment2.setPatientId(2L);
         appointment2.setStatus(Status.COMPLETED.name());
@@ -60,6 +62,8 @@ public class AppointmentControllerTest {
                 .andExpect(jsonPath("$[1].appointmentDate", is("2025-01-10")))
                 .andExpect(jsonPath("$[0].appointmentTime", is("10:00:00")))
                 .andExpect(jsonPath("$[1].appointmentTime", is("11:00:00")))
+                .andExpect(jsonPath("$[0].durationMinutes", is(30)))
+                .andExpect(jsonPath("$[1].durationMinutes", is(45)))
                 .andExpect(jsonPath("$[0].status", is(Status.BOOKED.name())))  // Status verificat
                 .andExpect(jsonPath("$[1].status", is(Status.COMPLETED.name())));  // Status verificat
     }
@@ -70,6 +74,7 @@ public class AppointmentControllerTest {
         newAppointment.setId(1L);
         newAppointment.setAppointmentDate(LocalDate.of(2025, 1, 10));
         newAppointment.setAppointmentTime(LocalTime.of(10, 0));
+        newAppointment.setDurationMinutes(30);
         newAppointment.setDoctorId(1L);
         newAppointment.setPatientId(1L);
         newAppointment.setStatus(Status.BOOKED.name());
@@ -82,6 +87,7 @@ public class AppointmentControllerTest {
                         {
                             "appointmentDate": "2025-01-10",
                             "appointmentTime": "10:00:00",
+                            "durationMinutes": 30,
                             "doctorId": 1,
                             "patientId": 1,
                             "status": "BOOKED"

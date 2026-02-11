@@ -6,11 +6,11 @@ import com.proiect.appointment_booking_system.exceptions.UserAlreadyExists;
 import com.proiect.appointment_booking_system.mapper.DoctorMapper;
 import com.proiect.appointment_booking_system.model.Clinic;
 import com.proiect.appointment_booking_system.model.Doctor;
-import com.proiect.appointment_booking_system.model.User;
 import com.proiect.appointment_booking_system.repository.ClinicRepository;
 import com.proiect.appointment_booking_system.repository.DoctorRepository;
 import com.proiect.appointment_booking_system.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
@@ -29,6 +29,9 @@ public class DoctorService {
     @Autowired
     private ClinicRepository clinicRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     public void registerDoctor(DoctorDTO doctorDTO) {
         boolean user = userRepository.existsByEmail(doctorDTO.getUser().getEmail());
         if (user) {
@@ -42,6 +45,7 @@ public class DoctorService {
             throw new ClinicNotFound();
         }
         Doctor doctor = DoctorMapper.toEntity(doctorDTO,clinics);
+        doctor.getUser().setPassword(encodePassword(doctor.getUser().getPassword()));
         doctorRepository.save(doctor);
     }
 
@@ -69,5 +73,11 @@ public class DoctorService {
                 .collect(Collectors.toList());
     }
 
+    private String encodePassword(String rawPassword) {
+        if (passwordEncoder == null || rawPassword == null) {
+            return rawPassword;
+        }
+        return passwordEncoder.encode(rawPassword);
+    }
 
 }

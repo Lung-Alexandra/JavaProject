@@ -5,6 +5,10 @@ built using Java Spring Boot. It will allow patients to schedule appointments
 with healthcare providers, view available time slots, and receive reminders
 while offering clinics tools for managing appointments efficiently.
 
+The current version also includes:
+- a visual dashboard at `/` for patient registration and appointment booking;
+- automatic email reminders sent through Gmail SMTP when notification time is reached.
+
 ### Databese's Schema
 
 Diagram containing the 6 entities and the relationships between them.
@@ -167,8 +171,9 @@ Entities and Relationships:
 - **Description**: Enables patients to book and manage appointments with doctors at specific clinics.
 - **Key Functionalities**:
     - Appointment creation with date, time, and doctor selection.
+    - Appointment duration in minutes (e.g., 15/30/45/60).
     - Status tracking for appointments (e.g., Booked, Cancelled, Completed).
-    - Prevention of scheduling conflicts through availability checks.
+    - Prevention of scheduling conflicts through interval overlap checks.
 - **Implementation**:
     - `AppointmentController`, `AppointmentService`, `AppointmentRepository` for handling logic.
 
@@ -189,10 +194,31 @@ Entities and Relationships:
 - **Key Functionalities**:
     - Generate notifications upon appointment status updates.
     - Send reminders 24 hours before scheduled appointments.
+    - Deliver reminder emails automatically with a scheduled background job.
 - **Implementation**:
     - `NotificationController`, `NotificationService`, `NotificationRepository` to manage notifications.
 
+### 6. **Visual Dashboard**
+
+- **Description**: Provides a browser interface for rapid testing and demo flow.
+- **Key Functionalities**:
+    - Register patients with email address.
+    - Create appointments using dropdown selections (patient/doctor/clinic).
+    - Inspect reminder notifications and delivery status (Pending/Sent).
+- **Implementation**:
+    - Static frontend files in `src/main/resources/static/`.
+
 # API Documentation for Online Appointment Booking System
+
+## **Auth Controller**
+
+| HTTP Method | Endpoint             | Description                                              |
+|-------------|----------------------|----------------------------------------------------------|
+| `POST`      | `/auth/patient/login`| Login for patient accounts and receive JWT.              |
+| `POST`      | `/auth/doctor/login` | Login for doctor accounts and receive JWT.               |
+| `POST`      | `/auth/login`        | Generic login (kept for compatibility).                 |
+
+---
 
 ## **Patient Controller**
 
@@ -259,6 +285,7 @@ Entities and Relationships:
 | HTTP Method | Endpoint                               | Description                               |
 |-------------|----------------------------------------|-------------------------------------------|
 | `GET`       | `/appointments`                        | Retrieve all appointments.                |
+| `GET`       | `/appointments/mine`                   | Retrieve current user appointments.       |
 | `POST`      | `/appointments`                        | Create a new appointment.                 |
 | `GET`       | `/appointments/patients`               | Track appointments for specific patients. |
 | `DELETE`    | `/appointments/{appointmentId}/cancel` | Cancel a specific appointment by ID.      |
@@ -267,3 +294,119 @@ Entities and Relationships:
 ---
 
 - Use [Swagger UI](http://localhost:8080/swagger-ui.html) for detailed API exploration and testing.
+
+## Visual Interface
+
+- Open the dashboard at [http://localhost:8080/](http://localhost:8080/).
+- On the landing page you can:
+  - login as `PATIENT` or `DOCTOR`;
+  - register a new `PATIENT` or `DOCTOR` account.
+- After login, dashboard is role-specific:
+  - `PATIENT`: profile, doctor list, create appointment, view/cancel own appointments;
+  - `DOCTOR`: profile, own appointments, patient details for each appointment.
+
+## Demo Seed Data (Optional)
+
+Enable demo data with:
+
+- `APP_SEED_DEMO_DATA=true`
+
+This creates/updates:
+
+- Clinics:
+  - `Heart Care Central`
+  - `City Medical Hub`
+- Doctors:
+  - `doctor.doe@demo.local` / password `Demo1234!`
+  - `doctor.smith@demo.local` / password `Demo1234!`
+- Patients:
+  - `ana.popescu@demo.local` / password `Demo1234!`
+  - `mihai.ionescu@demo.local` / password `Demo1234!`
+- A few future appointments (non-overlapping).
+
+Demo login details:
+
+- Doctor login endpoint: `POST /auth/doctor/login`
+- Patient login endpoint: `POST /auth/patient/login`
+- Shared demo password for all demo accounts: `Demo1234!`
+- Doctor demo emails:
+  - `doctor.doe@demo.local`
+  - `doctor.smith@demo.local`
+- Patient demo emails:
+  - `ana.popescu@demo.local`
+  - `mihai.ionescu@demo.local`
+
+Example login payload:
+
+```json
+{
+  "email": "doctor.doe@demo.local",
+  "password": "Demo1234!"
+}
+```
+
+Overlap protection:
+
+- The backend now rejects appointment creation if doctor already has an appointment at the same date+time.
+- It also rejects if patient already has an appointment at the same date+time.
+
+## Authentication (JWT)
+
+- Public endpoints:
+  - `POST /auth/patient/login`
+  - `POST /auth/doctor/login`
+  - `POST /doctors/register`
+  - `GET /clinics`
+  - `POST /clinics/register`
+  - `POST /users/register`
+  - `POST /patients/register`
+- Protected endpoints:
+  - all other API endpoints require `Authorization: Bearer <token>`.
+- Role behavior for appointments:
+  - `PATIENT`: can create and cancel only own appointments, can view `/appointments/mine`.
+  - `DOCTOR`: can only view own appointments via `/appointments/mine`.
+- Default token validity is 24h (`APP_JWT_EXPIRATION_MS`).
+
+Environment variables:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `APP_SECURITY_ENABLED` | Enables JWT auth layer | `true` |
+| `APP_JWT_SECRET` | Base64 secret used to sign JWT | `...` |
+| `APP_JWT_EXPIRATION_MS` | Token expiry in milliseconds | `86400000` |
+
+## Receive Reminders (Email Notifications)
+
+To actually receive reminder emails (not only DB records), configure Gmail SMTP and enable the notification worker.
+
+1. Enable 2-Step Verification on the sender Gmail account, then create a Google App Password.
+2. Set these environment variables before starting the app:
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `MAIL_USERNAME` | Gmail sender address | `myclinic@gmail.com` |
+| `MAIL_PASSWORD` | Google App Password (16 chars) | `abcd efgh ijkl mnop` |
+| `NOTIFICATION_EMAIL_ENABLED` | Enables scheduler-based email sending | `true` |
+| `NOTIFICATION_EMAIL_FROM` | Optional explicit sender address | `myclinic@gmail.com` |
+| `NOTIFICATION_SCHEDULER_DELAY_MS` | Optional polling interval | `60000` |
+
+3. Register patient with a valid email address.
+4. Create an appointment; the system creates a reminder notification at `appointment - 24h`.
+5. Scheduler checks due notifications and sends emails automatically.
+
+## Deploy on Render
+
+The repository includes `render.yaml` for one-click blueprint deploy using Docker.
+
+1. Push the project to GitHub.
+2. In Render: `New +` -> `Blueprint` and select the repository.
+3. Render reads `render.yaml`, builds `appointment_booking_system/Dockerfile`, and creates the web service.
+4. In Render dashboard, set secret environment variables:
+   - `DB_URL` (external MySQL JDBC URL)
+   - `DB_USER`
+   - `DB_PASSWORD`
+   - `MAIL_USERNAME`
+   - `MAIL_PASSWORD`
+   - `APP_JWT_SECRET`
+5. Trigger deploy and open your service URL.
+6. Access dashboard at `https://<your-service>.onrender.com/` and Swagger at `/swagger-ui.html`.

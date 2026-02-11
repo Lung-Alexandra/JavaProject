@@ -30,6 +30,8 @@ public class Appointment {
 
     private LocalTime appointmentTime;
 
+    private Integer durationMinutes;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Status status; // E.g., "BOOKED", "CANCELLED", "COMPLETED"
@@ -87,6 +89,14 @@ public class Appointment {
 
     public void setAppointmentTime(LocalTime appointmentTime) {
         this.appointmentTime = appointmentTime;
+    }
+
+    public Integer getDurationMinutes() {
+        return durationMinutes;
+    }
+
+    public void setDurationMinutes(Integer durationMinutes) {
+        this.durationMinutes = durationMinutes;
     }
 
     public Status getStatus() {

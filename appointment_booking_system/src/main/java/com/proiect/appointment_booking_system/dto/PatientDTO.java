@@ -4,6 +4,7 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class PatientDTO {
+    private Long id;
 
     @NotNull(message = "User cannot be null")
     private UserDTO user;
@@ -16,6 +17,13 @@ public class PatientDTO {
     private String address;
 
     // Getters and Setters
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 
     public UserDTO getUser() {
         return user;

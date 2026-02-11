@@ -8,6 +8,7 @@ import com.proiect.appointment_booking_system.model.Patient;
 import com.proiect.appointment_booking_system.repository.PatientRepository;
 import com.proiect.appointment_booking_system.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +26,9 @@ public class PatientService {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
 
     public void registerPatient(PatientDTO patientDTO) {
         boolean user = userRepository.existsByEmail(patientDTO.getUser().getEmail());
@@ -33,6 +37,7 @@ public class PatientService {
         }
 
         Patient patient = PatientMapper.toEntity(patientDTO);
+        patient.getUser().setPassword(encodePassword(patient.getUser().getPassword()));
         patientRepository.save(patient);
     }
 
@@ -62,5 +67,11 @@ public class PatientService {
         patientRepository.deleteById(id);
     }
 
+    private String encodePassword(String rawPassword) {
+        if (passwordEncoder == null || rawPassword == null) {
+            return rawPassword;
+        }
+        return passwordEncoder.encode(rawPassword);
+    }
 
 }

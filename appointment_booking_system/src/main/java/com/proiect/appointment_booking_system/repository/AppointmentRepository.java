@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDate;
 import java.util.List;
 
 
@@ -15,5 +16,9 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     Long countByPatientId(@Param("patientId") Long patientId);
 
     List<Appointment> findAllByStatus(Status status);
+    List<Appointment> findByPatientUserEmail(String email);
+    List<Appointment> findByDoctorUserEmail(String email);
+    List<Appointment> findByDoctorIdAndAppointmentDateAndStatusNot(Long doctorId, LocalDate appointmentDate, Status status);
+    List<Appointment> findByPatientIdAndAppointmentDateAndStatusNot(Long patientId, LocalDate appointmentDate, Status status);
 
 }

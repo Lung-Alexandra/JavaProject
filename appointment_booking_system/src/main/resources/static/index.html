@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clinic Flow Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bitter:wght@500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div class="bg-shape bg-shape-one"></div>
+<div class="bg-shape bg-shape-two"></div>
+
+<main class="container">
+    <header class="hero reveal">
+        <p class="eyebrow">Appointment Booking System</p>
+        <h1>Doctor And Patient Portal</h1>
+        <p class="hero-text">
+            Choose your role, login, and use a role-specific dashboard. Patients can create appointments.
+            Doctors can view their appointments and patient details.
+        </p>
+        <div class="hero-actions">
+            <button id="refreshAll" type="button" class="btn btn-primary">Refresh</button>
+            <button id="logoutBtn" type="button" class="btn btn-secondary" disabled>Logout</button>
+            <span id="authState" class="tip">Not authenticated</span>
+        </div>
+    </header>
+
+    <section id="guestView" class="grid reveal" aria-label="Auth and registration">
+        <article class="card">
+            <h2>Login</h2>
+            <form id="loginForm" class="form">
+                <label>Login as
+                    <select id="loginRole" required>
+                        <option value="PATIENT">Patient</option>
+                        <option value="DOCTOR">Doctor</option>
+                    </select>
+                </label>
+                <label>Email
+                    <input id="loginEmail" type="email" required>
+                </label>
+                <label>Password
+                    <input id="loginPassword" type="password" required minlength="8">
+                </label>
+                <button type="submit" class="btn btn-primary">Login</button>
+            </form>
+        </article>
+
+        <article class="card">
+            <h2>Register</h2>
+            <form id="registerForm" class="form">
+                <label>Register as
+                    <select id="registerRole" required>
+                        <option value="PATIENT">Patient</option>
+                        <option value="DOCTOR">Doctor</option>
+                    </select>
+                </label>
+                <label>Full name
+                    <input id="registerName" type="text" required minlength="2">
+                </label>
+                <label>Email
+                    <input id="registerEmail" type="email" required>
+                </label>
+                <label>Password
+                    <input id="registerPassword" type="password" required minlength="8">
+                </label>
+                <label>Phone number (10 digits)
+                    <input id="registerPhone" type="text" required pattern="[0-9]{10}" placeholder="0712345678">
+                </label>
+
+                <div id="patientRegisterFields" class="form">
+                    <label>Address
+                        <input id="registerPatientAddress" type="text" minlength="5">
+                    </label>
+                    <label>Medical history
+                        <textarea id="registerPatientHistory" rows="3"></textarea>
+                    </label>
+                </div>
+
+                <div id="doctorRegisterFields" class="form hidden">
+                    <label>Specialization
+                        <input id="registerDoctorSpecialization" type="text" minlength="2">
+                    </label>
+                    <label>Availability schedule
+                        <input id="registerDoctorAvailability" type="text" placeholder="Mon-Fri 09:00-17:00">
+                    </label>
+                    <label>Clinics
+                        <select id="registerDoctorClinicIds" multiple required size="4"></select>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create Account</button>
+            </form>
+            <p class="helper">
+                Select one or more clinics by name (Ctrl/Cmd + click for multiple).
+            </p>
+        </article>
+    </section>
+
+    <section id="patientView" class="stack reveal hidden" aria-label="Patient dashboard">
+        <article class="card">
+            <h2>My Profile</h2>
+            <div id="patientProfile" class="list"></div>
+        </article>
+
+        <article class="card">
+            <h2>Available Doctors</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Doctor</th>
+                        <th>Specialization</th>
+                        <th>Schedule</th>
+                        <th>Clinics</th>
+                    </tr>
+                    </thead>
+                    <tbody id="doctorsTableBody"></tbody>
+                </table>
+            </div>
+        </article>
+
+        <article class="card">
+            <h2>Create Appointment</h2>
+            <form id="patientAppointmentForm" class="form">
+                <label>Doctor
+                    <select id="patientDoctorSelect" required></select>
+                </label>
+                <label>Clinic
+                    <select id="patientClinicSelect" required></select>
+                </label>
+                <label>Date
+                    <input id="patientAppointmentDate" type="date" required>
+                </label>
+                <label>Time
+                    <input id="patientAppointmentTime" type="time" required>
+                </label>
+                <label>Duration (minutes)
+                    <select id="patientAppointmentDuration" required>
+                        <option value="15">15</option>
+                        <option value="30" selected>30</option>
+                        <option value="45">45</option>
+                        <option value="60">60</option>
+                        <option value="90">90</option>
+                    </select>
+                </label>
+                <button type="submit" class="btn btn-primary">Create Appointment</button>
+            </form>
+        </article>
+
+        <article class="card">
+            <h2>My Appointments</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Doctor</th>
+                        <th>Clinic</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="patientAppointmentsBody"></tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+
+    <section id="doctorView" class="stack reveal hidden" aria-label="Doctor dashboard">
+        <article class="card">
+            <h2>Doctor Profile</h2>
+            <div id="doctorProfile" class="list"></div>
+        </article>
+
+        <article class="card">
+            <h2>My Appointments And Patient Details</h2>
+            <div class="table-wrap">
+                <table>
+                    <thead>
+                    <tr>
+                        <th>Appointment</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Duration</th>
+                        <th>Status</th>
+                        <th>Patient</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Address</th>
+                        <th>Medical History</th>
+                    </tr>
+                    </thead>
+                    <tbody id="doctorAppointmentsBody"></tbody>
+                </table>
+            </div>
+        </article>
+    </section>
+</main>
+
+<div id="statusBar" class="status-bar" role="status" aria-live="polite"></div>
+
+<script src="/app.js"></script>
+</body>
+</html>

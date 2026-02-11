@@ -21,6 +21,8 @@ public class Notification {
 
     private String notificationType; // E.g., "REMINDER", "CANCELLATION"
     private LocalDateTime sentAt;
+    private boolean delivered;
+    private LocalDateTime deliveredAt;
 
     // Getters and setters
 
@@ -62,5 +64,21 @@ public class Notification {
 
     public void setSentAt(LocalDateTime sentAt) {
         this.sentAt = sentAt;
+    }
+
+    public boolean isDelivered() {
+        return delivered;
+    }
+
+    public void setDelivered(boolean delivered) {
+        this.delivered = delivered;
+    }
+
+    public LocalDateTime getDeliveredAt() {
+        return deliveredAt;
+    }
+
+    public void setDeliveredAt(LocalDateTime deliveredAt) {
+        this.deliveredAt = deliveredAt;
     }
 }

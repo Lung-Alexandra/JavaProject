@@ -1,0 +1,24 @@
+services:
+  - type: web
+    name: appointment-booking-system
+    runtime: docker
+    rootDir: appointment_booking_system
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USER
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false
+      - key: NOTIFICATION_EMAIL_ENABLED
+        value: "true"
+      - key: APP_SECURITY_ENABLED
+        value: "true"
+      - key: APP_JWT_SECRET
+        sync: false

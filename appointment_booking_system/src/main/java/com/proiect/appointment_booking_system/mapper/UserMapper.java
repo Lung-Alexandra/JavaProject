@@ -25,7 +25,7 @@ public class UserMapper {
         user.setName(userDTO.getName());
         user.setEmail(userDTO.getEmail());
         user.setPassword(userDTO.getPassword());
-        user.setRole(Role.valueOf(String.valueOf(Role.valueOf(userDTO.getRole())))); // String to Enum
+        user.setRole(Role.valueOf(userDTO.getRole().trim().toUpperCase())); // String to Enum
         user.setPhoneNumber(userDTO.getPhoneNumber());
         return user;
     }
