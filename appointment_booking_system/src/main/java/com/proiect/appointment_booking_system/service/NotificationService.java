@@ -93,7 +93,7 @@ public class NotificationService {
 
         List<Notification> dueNotifications =
                 repository.findBySentAtLessThanEqualAndDeliveredFalse(LocalDateTime.now());
-
+        Logger.info("Found {} due notifications to send.", dueNotifications.size());
         for (Notification notification : dueNotifications) {
             sendReminderEmail(notification);
         }
@@ -122,10 +122,12 @@ public class NotificationService {
         message.setText(buildReminderBody(notification));
 
         try {
+            Logger.info("Sending reminder email for notification {} to {}.", notification.getId(), recipient);
             mailSender.send(message);
             notification.setDelivered(true);
             notification.setDeliveredAt(LocalDateTime.now());
             repository.save(notification);
+            LOGGER.info("Successfully sent reminder for notification {} to {}.", notification.getId(), recipient);
         } catch (MailAuthenticationException exception) {
             LOGGER.error(
                     "SMTP authentication failed for sender {}. Verify MAIL_USERNAME and a valid Gmail App Password.",
