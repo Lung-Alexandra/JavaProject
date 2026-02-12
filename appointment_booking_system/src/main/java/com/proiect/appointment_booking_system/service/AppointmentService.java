@@ -22,6 +22,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -94,7 +95,7 @@ public class AppointmentService {
         Appointment savedAppointment = repository.save(appointment);
 
         LocalDateTime appointmentStart = appointment.getAppointmentDate().atTime(appointment.getAppointmentTime());
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
         LocalDateTime notificationTime = appointmentStart.isAfter(now.plusDays(1))
                 ? appointmentStart.minusDays(1)
                 : now;

@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.time.LocalDateTime;
+import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
@@ -92,7 +93,7 @@ public class NotificationService {
         }
 
         List<Notification> dueNotifications =
-                repository.findBySentAtLessThanEqualAndDeliveredFalse(LocalDateTime.now());
+                repository.findBySentAtLessThanEqualAndDeliveredFalse(LocalDateTime.now(ZoneOffset.UTC));
         LOGGER.info("Found {} due notifications to send.", dueNotifications.size());
         for (Notification notification : dueNotifications) {
             sendReminderEmail(notification);
@@ -108,7 +109,7 @@ public class NotificationService {
         if (recipient.toLowerCase(Locale.ROOT).endsWith(DEMO_EMAIL_DOMAIN)) {
             LOGGER.info("Skipping reminder email for demo recipient {}.", recipient);
             notification.setDelivered(true);
-            notification.setDeliveredAt(LocalDateTime.now());
+            notification.setDeliveredAt(LocalDateTime.now(ZoneOffset.UTC));
             repository.save(notification);
             return;
         }
@@ -125,7 +126,7 @@ public class NotificationService {
             LOGGER.info("Sending reminder email for notification {} to {}.", notification.getId(), recipient);
             mailSender.send(message);
             notification.setDelivered(true);
-            notification.setDeliveredAt(LocalDateTime.now());
+            notification.setDeliveredAt(LocalDateTime.now(ZoneOffset.UTC));
             repository.save(notification);
             LOGGER.info("Successfully sent reminder for notification {} to {}.", notification.getId(), recipient);
         } catch (MailAuthenticationException exception) {
@@ -147,7 +148,7 @@ public class NotificationService {
             return;
         }
         LocalDateTime sentAt = notification.getSentAt();
-        if (sentAt != null && !sentAt.isAfter(LocalDateTime.now()) && !notification.isDelivered()) {
+        if (sentAt != null && !sentAt.isAfter(LocalDateTime.now(ZoneOffset.UTC)) && !notification.isDelivered()) {
             sendReminderEmail(notification);
         }
     }
