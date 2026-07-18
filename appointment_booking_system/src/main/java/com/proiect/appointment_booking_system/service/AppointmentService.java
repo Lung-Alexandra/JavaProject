@@ -15,13 +15,17 @@ import com.proiect.appointment_booking_system.repository.ClinicRepository;
 import com.proiect.appointment_booking_system.repository.DoctorRepository;
 import com.proiect.appointment_booking_system.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +34,10 @@ import java.util.stream.Collectors;
 @Service
 public class AppointmentService {
     private static final int DEFAULT_APPOINTMENT_DURATION_MINUTES = 30;
+    private static final Duration REMINDER_LEAD_TIME = Duration.ofHours(24);
+
+    @Value("${appointments.time-zone:Europe/Bucharest}")
+    private String appointmentTimeZone = "Europe/Bucharest";
 
     @Autowired
     private AppointmentRepository repository;
@@ -69,6 +77,7 @@ public class AppointmentService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional
     public void createAppointment(AppointmentDTO dto) {
         Clinic clinic = clinicRepository.findById(dto.getClinicId()).orElseThrow(ClinicNotFound::new);
         Patient patient = patientRepository.findById(dto.getPatientId()).orElseThrow(PatientNotFound::new);
@@ -94,11 +103,7 @@ public class AppointmentService {
         Appointment appointment = AppointmentMapper.toEntity(dto, patient, doctor, clinic);
         Appointment savedAppointment = repository.save(appointment);
 
-        LocalDateTime appointmentStart = appointment.getAppointmentDate().atTime(appointment.getAppointmentTime());
-        LocalDateTime now = LocalDateTime.now(ZoneOffset.UTC);
-        LocalDateTime notificationTime = appointmentStart.isAfter(now.plusDays(1))
-                ? appointmentStart.minusDays(1)
-                : now;
+        LocalDateTime notificationTime = calculateNotificationTime(appointment);
         NotificationDTO notificationDTO = new NotificationDTO();
         notificationDTO.setAppointmentId(savedAppointment.getId());
         notificationDTO.setPatientId(patient.getId());
@@ -106,6 +111,17 @@ public class AppointmentService {
         notificationDTO.setSentAt(notificationTime);
 
         notificationService.createNotification(notificationDTO);
+    }
+
+    private LocalDateTime calculateNotificationTime(Appointment appointment) {
+        Instant now = Instant.now();
+        Instant appointmentInstant = appointment.getAppointmentDate()
+                .atTime(appointment.getAppointmentTime())
+                .atZone(ZoneId.of(appointmentTimeZone))
+                .toInstant();
+        Instant reminderInstant = appointmentInstant.minus(REMINDER_LEAD_TIME);
+        Instant notificationInstant = reminderInstant.isAfter(now) ? reminderInstant : now;
+        return LocalDateTime.ofInstant(notificationInstant, ZoneOffset.UTC);
     }
 
     /**

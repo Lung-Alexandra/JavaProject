@@ -177,6 +177,12 @@ textarea:focus {
     transition: transform 0.18s ease, background-color 0.18s ease;
 }
 
+.btn:disabled {
+    opacity: 0.62;
+    cursor: wait;
+    transform: none;
+}
+
 .btn-primary {
     background: var(--primary);
     color: #f8fffd;

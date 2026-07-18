@@ -70,7 +70,6 @@ public class NotificationService {
         notification.setDelivered(false);
         notification.setDeliveredAt(null);
         Notification savedNotification = repository.save(notification);
-        triggerImmediateSendIfDue(savedNotification);
         return mapper.toDTO(savedNotification);
     }
 
@@ -140,16 +139,6 @@ public class NotificationService {
                     notification.getId(),
                     recipient,
                     exception);
-        }
-    }
-
-    private void triggerImmediateSendIfDue(Notification notification) {
-        if (!emailEnabled || mailSender == null) {
-            return;
-        }
-        LocalDateTime sentAt = notification.getSentAt();
-        if (sentAt != null && !sentAt.isAfter(LocalDateTime.now(ZoneOffset.UTC)) && !notification.isDelivered()) {
-            sendReminderEmail(notification);
         }
     }
 

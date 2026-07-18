@@ -379,6 +379,12 @@ async function loadPatientDashboard() {
     renderPatientAppointments();
 }
 
+async function loadPatientAppointments() {
+    const appointments = await api("/appointments/mine");
+    state.patientAppointments = Array.isArray(appointments) ? appointments : [];
+    renderPatientAppointments();
+}
+
 async function loadDoctorDashboard() {
     const [doctorProfile, appointments] = await Promise.all([
         api(`/doctors/${state.authUserId}`),
@@ -489,6 +495,12 @@ async function handleRegister(event) {
 
 async function handleCreatePatientAppointment(event) {
     event.preventDefault();
+    const form = event.currentTarget;
+    const submitButton = form.querySelector('button[type="submit"]');
+    if (!submitButton || submitButton.disabled) {
+        return;
+    }
+
     if (state.authUserRole !== "PATIENT") {
         throw new Error("Only patients can create appointments.");
     }
@@ -506,15 +518,33 @@ async function handleCreatePatientAppointment(event) {
         status: "BOOKED"
     };
 
-    await api("/appointments", {
-        method: "POST",
-        body: JSON.stringify(payload)
-    });
+    const originalButtonText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = "Creating...";
+    form.setAttribute("aria-busy", "true");
 
-    document.getElementById("patientAppointmentForm").reset();
-    setDateMin();
-    await loadPatientDashboard();
-    showStatus("Appointment created.");
+    let appointmentCreated = false;
+    try {
+        await api("/appointments", {
+            method: "POST",
+            body: JSON.stringify(payload)
+        });
+        appointmentCreated = true;
+
+        form.reset();
+        setDateMin();
+        await loadPatientAppointments();
+        showStatus("Appointment created.");
+    } catch (error) {
+        if (appointmentCreated) {
+            throw new Error(`Appointment created, but the list could not be refreshed: ${error.message}`);
+        }
+        throw error;
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+        form.removeAttribute("aria-busy");
+    }
 }
 
 async function handlePatientAppointmentsClick(event) {
