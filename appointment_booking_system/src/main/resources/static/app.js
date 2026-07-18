@@ -127,6 +127,20 @@ function setDateMin() {
     patientAppointmentDate.min = tomorrow.toISOString().split("T")[0];
 }
 
+function bindPasswordToggles() {
+    document.querySelectorAll("[data-password-toggle]").forEach((button) => {
+        button.addEventListener("click", () => {
+            const input = document.getElementById(button.dataset.passwordToggle);
+            const showPassword = input.type === "password";
+
+            input.type = showPassword ? "text" : "password";
+            button.textContent = showPassword ? "Hide" : "Show";
+            button.setAttribute("aria-label", showPassword ? "Hide password" : "Show password");
+            button.setAttribute("aria-pressed", String(showPassword));
+        });
+    });
+}
+
 function option(value, label) {
     const item = document.createElement("option");
     item.value = String(value);
@@ -520,6 +534,8 @@ async function handlePatientAppointmentsClick(event) {
 }
 
 function bindEvents() {
+    bindPasswordToggles();
+
     document.getElementById("loginForm").addEventListener("submit", async (event) => {
         try {
             await handleLogin(event);

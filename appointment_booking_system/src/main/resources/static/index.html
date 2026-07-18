@@ -42,7 +42,13 @@
                     <input id="loginEmail" type="email" required>
                 </label>
                 <label>Password
-                    <input id="loginPassword" type="password" required minlength="8">
+                    <span class="password-field">
+                        <input id="loginPassword" type="password" required minlength="8">
+                        <button type="button" class="password-toggle" data-password-toggle="loginPassword"
+                                aria-controls="loginPassword" aria-label="Show password" aria-pressed="false">
+                            Show
+                        </button>
+                    </span>
                 </label>
                 <button type="submit" class="btn btn-primary">Login</button>
             </form>
@@ -64,7 +70,13 @@
                     <input id="registerEmail" type="email" required>
                 </label>
                 <label>Password
-                    <input id="registerPassword" type="password" required minlength="8">
+                    <span class="password-field">
+                        <input id="registerPassword" type="password" required minlength="8">
+                        <button type="button" class="password-toggle" data-password-toggle="registerPassword"
+                                aria-controls="registerPassword" aria-label="Show password" aria-pressed="false">
+                            Show
+                        </button>
+                    </span>
                 </label>
                 <label>Phone number (10 digits)
                     <input id="registerPhone" type="text" required pattern="[0-9]{10}" placeholder="0712345678">
