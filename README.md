@@ -374,6 +374,15 @@ Environment variables:
 | `APP_SECURITY_ENABLED` | Enables JWT auth layer | `true` |
 | `APP_JWT_SECRET` | Base64 secret used to sign JWT | `...` |
 | `APP_JWT_EXPIRATION_MS` | Token expiry in milliseconds | `86400000` |
+| `APP_PUBLIC_BASE_URL` | Public app URL used in password reset emails; local default follows `PORT` | `https://your-app.up.railway.app` |
+| `PASSWORD_RESET_TOKEN_TTL_MINUTES` | Password reset link lifetime | `30` |
+
+Password recovery endpoints:
+
+| HTTP Method | Endpoint | Description |
+|-------------|----------|-------------|
+| `POST` | `/auth/password-reset/request` | Sends a one-time password reset link if the email exists. |
+| `POST` | `/auth/password-reset/confirm` | Resets the password with a valid reset token. |
 
 ## Receive Reminders (Email Notifications)
 

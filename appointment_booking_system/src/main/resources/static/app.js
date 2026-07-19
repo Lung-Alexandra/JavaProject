@@ -31,6 +31,7 @@ const logoutBtn = document.getElementById("logoutBtn");
 const guestView = document.getElementById("guestView");
 const loginCard = document.getElementById("loginCard");
 const registerCard = document.getElementById("registerCard");
+const resetCard = document.getElementById("resetCard");
 const securitySlot = document.getElementById("securitySlot");
 const accountSecurityView = document.getElementById("accountSecurityView");
 const securityToggle = document.getElementById("securityToggle");
@@ -55,7 +56,29 @@ const registerDoctorAvailabilityInput = document.getElementById("registerDoctorA
 const patientDoctorSelect = document.getElementById("patientDoctorSelect");
 const patientClinicSelect = document.getElementById("patientClinicSelect");
 const patientAppointmentDate = document.getElementById("patientAppointmentDate");
+const patientAppointmentTime = document.getElementById("patientAppointmentTime");
 const patientAppointmentDuration = document.getElementById("patientAppointmentDuration");
+const appointmentTimeHint = document.getElementById("appointmentTimeHint");
+
+const DAY_NAMES = {
+    sun: 0,
+    sunday: 0,
+    mon: 1,
+    monday: 1,
+    tue: 2,
+    tues: 2,
+    tuesday: 2,
+    wed: 3,
+    wednesday: 3,
+    thu: 4,
+    thur: 4,
+    thurs: 4,
+    thursday: 4,
+    fri: 5,
+    friday: 5,
+    sat: 6,
+    saturday: 6
+};
 
 async function api(path, options = {}) {
     const headers = { "Content-Type": "application/json", ...(options.headers || {}) };
@@ -131,6 +154,7 @@ function setAuthMode(mode) {
     state.authMode = mode;
     loginCard.classList.toggle("hidden", mode !== "login");
     registerCard.classList.toggle("hidden", mode !== "register");
+    resetCard.classList.toggle("hidden", mode !== "reset");
     document.querySelectorAll("[data-auth-mode]").forEach((button) => {
         const active = button.dataset.authMode === mode;
         button.classList.toggle("active", active);
@@ -266,6 +290,150 @@ function option(value, label) {
     item.value = String(value);
     item.textContent = label;
     return item;
+}
+
+function selectedDoctor() {
+    if (!patientDoctorSelect.value) {
+        return null;
+    }
+    return state.doctors.find((item) => Number(item.id) === Number(patientDoctorSelect.value)) || null;
+}
+
+function normalizeDayName(value) {
+    if (!value) {
+        return null;
+    }
+    const normalized = value.trim().toLowerCase();
+    return Object.prototype.hasOwnProperty.call(DAY_NAMES, normalized) ? DAY_NAMES[normalized] : null;
+}
+
+function dayRangeContains(startDay, endDay, targetDay) {
+    let current = startDay;
+    while (true) {
+        if (current === targetDay) {
+            return true;
+        }
+        if (current === endDay) {
+            return false;
+        }
+        current = current === 6 ? 0 : current + 1;
+    }
+}
+
+function parseTimeMinutes(hourValue, minuteValue) {
+    const hour = Number(hourValue);
+    const minute = minuteValue === undefined || minuteValue === "" ? 0 : Number(minuteValue);
+    if (!Number.isInteger(hour) || !Number.isInteger(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+        return null;
+    }
+    return hour * 60 + minute;
+}
+
+function addTimeRanges(text, windows) {
+    const timeRangePattern = /(\d{1,2})(?::(\d{2}))?\s*-\s*(\d{1,2})(?::(\d{2}))?/g;
+    let match;
+    while ((match = timeRangePattern.exec(text)) !== null) {
+        const start = parseTimeMinutes(match[1], match[2]);
+        const end = parseTimeMinutes(match[3], match[4]);
+        if (start !== null && end !== null && start < end) {
+            windows.push({ start, end });
+        }
+    }
+}
+
+function parseAvailabilityWindows(schedule, dateValue) {
+    if (!schedule || !dateValue) {
+        return [];
+    }
+
+    const date = new Date(`${dateValue}T00:00:00`);
+    if (Number.isNaN(date.getTime())) {
+        return [];
+    }
+
+    const targetDay = date.getDay();
+    const windows = [];
+    const daySchedulePattern = /^\s*([A-Za-z]{3,9})(?:\s*-\s*([A-Za-z]{3,9}))?\s*:?\s*(.+)$/i;
+
+    schedule.split(";")
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .forEach((part) => {
+            const dayMatch = daySchedulePattern.exec(part);
+            if (dayMatch) {
+                const startDay = normalizeDayName(dayMatch[1]);
+                if (startDay !== null) {
+                    const endDay = normalizeDayName(dayMatch[2]) ?? startDay;
+                    if (dayRangeContains(startDay, endDay, targetDay)) {
+                        addTimeRanges(dayMatch[3], windows);
+                    }
+                    return;
+                }
+            }
+            addTimeRanges(part, windows);
+        });
+
+    return windows;
+}
+
+function minutesToTime(minutes) {
+    const hour = Math.floor(minutes / 60);
+    const minute = minutes % 60;
+    return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+}
+
+function refreshAppointmentTimeOptions() {
+    const doctor = selectedDoctor();
+    const dateValue = patientAppointmentDate.value;
+    const durationMinutes = Number(patientAppointmentDuration.value) || 30;
+    const previousValue = patientAppointmentTime.value;
+
+    patientAppointmentTime.innerHTML = "";
+
+    if (!doctor || !dateValue) {
+        const empty = option("", "Select doctor and date first");
+        empty.disabled = true;
+        empty.selected = true;
+        patientAppointmentTime.appendChild(empty);
+        patientAppointmentTime.disabled = true;
+        appointmentTimeHint.textContent = "Select a doctor and date to see available times.";
+        return;
+    }
+
+    const windows = parseAvailabilityWindows(doctor.availabilitySchedule, dateValue);
+    const slots = [];
+    const seen = new Set();
+    windows.forEach((window) => {
+        for (let start = window.start; start + durationMinutes <= window.end; start += 15) {
+            const value = minutesToTime(start);
+            if (!seen.has(value)) {
+                seen.add(value);
+                slots.push(value);
+            }
+        }
+    });
+
+    if (slots.length === 0) {
+        const empty = option("", "No times inside schedule");
+        empty.disabled = true;
+        empty.selected = true;
+        patientAppointmentTime.appendChild(empty);
+        patientAppointmentTime.disabled = true;
+        appointmentTimeHint.textContent = `Schedule: ${doctor.availabilitySchedule || "not configured"}`;
+        return;
+    }
+
+    patientAppointmentTime.disabled = false;
+    const prompt = option("", "Select a time");
+    prompt.disabled = true;
+    prompt.selected = true;
+    patientAppointmentTime.appendChild(prompt);
+    slots.forEach((slot) => patientAppointmentTime.appendChild(option(slot, slot)));
+
+    if (previousValue && slots.includes(previousValue)) {
+        patientAppointmentTime.value = previousValue;
+    }
+    appointmentTimeHint.textContent = `Schedule: ${doctor.availabilitySchedule}`;
 }
 
 function fillSelect(element, options, emptyMessage, placeholder = "", selectedValue = "") {
@@ -557,6 +725,7 @@ function refreshPatientAppointmentSelectors() {
         clinics.length > 0 ? "Select a clinic" : "",
         previousClinicValue
     );
+    refreshAppointmentTimeOptions();
 }
 
 async function loadPatientDashboard() {
@@ -723,6 +892,76 @@ async function handlePasswordChange(event) {
     }
 }
 
+async function handlePasswordResetRequest(event) {
+    event.preventDefault();
+
+    const form = event.currentTarget;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = "Sending...";
+
+    try {
+        await api("/auth/password-reset/request", {
+            method: "POST",
+            body: JSON.stringify({ email: document.getElementById("resetEmail").value.trim() }),
+            skipAuth: true
+        });
+        showStatus("If that email exists, a reset link has been sent.");
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+    }
+}
+
+async function handlePasswordResetConfirm(event) {
+    event.preventDefault();
+
+    const newPassword = document.getElementById("resetNewPassword").value;
+    const confirmPassword = document.getElementById("resetConfirmPassword").value;
+    if (newPassword !== confirmPassword) {
+        throw new Error("The new password confirmation does not match.");
+    }
+
+    const form = event.currentTarget;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = "Resetting...";
+
+    try {
+        await api("/auth/password-reset/confirm", {
+            method: "POST",
+            body: JSON.stringify({
+                token: document.getElementById("resetToken").value.trim(),
+                newPassword
+            }),
+            skipAuth: true
+        });
+        form.reset();
+        window.history.replaceState({}, document.title, window.location.pathname);
+        setAuthMode("login");
+        showStatus("Password reset. You can login now.");
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+    }
+}
+
+function loadPasswordResetTokenFromUrl() {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("resetToken");
+    if (!token) {
+        return false;
+    }
+    stopAutoRefresh();
+    clearAuth();
+    document.getElementById("resetToken").value = token;
+    setAuthMode("reset");
+    window.history.replaceState({}, document.title, window.location.pathname);
+    return true;
+}
+
 async function handleRegister(event) {
     event.preventDefault();
     const role = registerRoleSelect.value;
@@ -796,10 +1035,14 @@ async function handleCreatePatientAppointment(event) {
         doctorId: Number(patientDoctorSelect.value),
         clinicId: Number(patientClinicSelect.value),
         appointmentDate: document.getElementById("patientAppointmentDate").value,
-        appointmentTime: document.getElementById("patientAppointmentTime").value,
+        appointmentTime: patientAppointmentTime.value,
         durationMinutes: Number(patientAppointmentDuration.value),
         status: "BOOKED"
     };
+
+    if (!payload.appointmentTime) {
+        throw new Error("Select an appointment time inside the doctor's schedule.");
+    }
 
     const originalButtonText = submitButton.textContent;
     submitButton.disabled = true;
@@ -816,6 +1059,7 @@ async function handleCreatePatientAppointment(event) {
 
         form.reset();
         setDateMin();
+        refreshPatientAppointmentSelectors();
         await loadPatientAppointments({ showLoading: true });
         showStatus("Appointment created.");
     } catch (error) {
@@ -918,10 +1162,28 @@ function bindEvents() {
     });
 
     patientDoctorSelect.addEventListener("change", refreshPatientAppointmentSelectors);
+    patientAppointmentDate.addEventListener("change", refreshAppointmentTimeOptions);
+    patientAppointmentDuration.addEventListener("change", refreshAppointmentTimeOptions);
 
     document.getElementById("patientAppointmentForm").addEventListener("submit", async (event) => {
         try {
             await handleCreatePatientAppointment(event);
+        } catch (error) {
+            showStatus(error.message, true);
+        }
+    });
+
+    document.getElementById("passwordResetRequestForm").addEventListener("submit", async (event) => {
+        try {
+            await handlePasswordResetRequest(event);
+        } catch (error) {
+            showStatus(error.message, true);
+        }
+    });
+
+    document.getElementById("passwordResetConfirmForm").addEventListener("submit", async (event) => {
+        try {
+            await handlePasswordResetConfirm(event);
         } catch (error) {
             showStatus(error.message, true);
         }
@@ -964,8 +1226,9 @@ async function init() {
         setAuthMode("login");
         setLoginRole(loginRoleInput.value || "PATIENT");
         setRegisterRole(registerRoleSelect.value || "PATIENT");
+        const resetLinkOpened = loadPasswordResetTokenFromUrl();
         updateLayout();
-        if (state.authToken) {
+        if (state.authToken && !resetLinkOpened) {
             startAutoRefresh();
             void loadDashboardData({ silent: true }).catch((error) => showStatus(error.message, true));
         } else {

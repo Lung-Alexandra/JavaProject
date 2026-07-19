@@ -59,6 +59,7 @@ class AppointmentReminderSchedulingTest {
         patient.setId(20L);
         Doctor doctor = new Doctor();
         doctor.setId(10L);
+        doctor.setAvailabilitySchedule("Mon-Sun 09:00-17:00");
 
         when(clinicRepository.findById(dto.getClinicId())).thenReturn(Optional.of(clinic));
         when(patientRepository.findById(dto.getPatientId())).thenReturn(Optional.of(patient));

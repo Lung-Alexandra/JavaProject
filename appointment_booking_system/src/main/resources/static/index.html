@@ -62,6 +62,7 @@
                     </span>
                 </label>
                 <button type="submit" class="btn btn-primary">Login</button>
+                <button type="button" class="link-button" data-auth-mode="reset">Forgot password?</button>
             </form>
         </article>
 
@@ -118,6 +119,43 @@
             <p class="helper">
                 Select one or more clinics by name (Ctrl/Cmd + click for multiple).
             </p>
+        </article>
+
+        <article id="resetCard" class="card hidden">
+            <h2>Password Recovery</h2>
+            <p class="auth-notice">Enter your email to receive a one-time password reset link.</p>
+            <form id="passwordResetRequestForm" class="form">
+                <label>Email
+                    <input id="resetEmail" type="email" required autocomplete="email">
+                </label>
+                <button type="submit" class="btn btn-primary">Send Reset Link</button>
+            </form>
+            <div class="reset-divider"></div>
+            <form id="passwordResetConfirmForm" class="form">
+                <label>Reset token
+                    <input id="resetToken" type="text" required autocomplete="off">
+                </label>
+                <label>New password
+                    <span class="password-field">
+                        <input id="resetNewPassword" type="password" required minlength="8" autocomplete="new-password">
+                        <button type="button" class="password-toggle" data-password-toggle="resetNewPassword"
+                                aria-controls="resetNewPassword" aria-label="Show new password" aria-pressed="false">
+                            Show
+                        </button>
+                    </span>
+                </label>
+                <label>Confirm new password
+                    <span class="password-field">
+                        <input id="resetConfirmPassword" type="password" required minlength="8" autocomplete="new-password">
+                        <button type="button" class="password-toggle" data-password-toggle="resetConfirmPassword"
+                                aria-controls="resetConfirmPassword" aria-label="Show confirmed password" aria-pressed="false">
+                            Show
+                        </button>
+                    </span>
+                </label>
+                <button type="submit" class="btn btn-primary">Reset Password</button>
+                <button type="button" class="btn btn-secondary" data-auth-mode="login">Back To Login</button>
+            </form>
         </article>
     </section>
 
@@ -209,7 +247,8 @@
                     <input id="patientAppointmentDate" type="date" required>
                 </label>
                 <label>Time
-                    <input id="patientAppointmentTime" type="time" required>
+                    <select id="patientAppointmentTime" required></select>
+                    <small id="appointmentTimeHint" class="field-hint">Select a doctor and date to see available times.</small>
                 </label>
                 <label>Duration (minutes)
                     <select id="patientAppointmentDuration" required>

@@ -22,19 +22,31 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.ZoneOffset;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Service
 public class AppointmentService {
     private static final int DEFAULT_APPOINTMENT_DURATION_MINUTES = 30;
     private static final Duration REMINDER_LEAD_TIME = Duration.ofHours(24);
+    private static final Pattern DAY_SCHEDULE_PATTERN = Pattern.compile(
+            "^\\s*([A-Za-z]{3,9})(?:\\s*-\\s*([A-Za-z]{3,9}))?\\s*:?\\s*(.+)$",
+            Pattern.CASE_INSENSITIVE);
+    private static final Pattern TIME_RANGE_PATTERN = Pattern.compile(
+            "(\\d{1,2})(?::(\\d{2}))?\\s*-\\s*(\\d{1,2})(?::(\\d{2}))?");
+    private static final Map<String, DayOfWeek> DAY_NAMES = createDayNameMap();
 
     @Value("${appointments.time-zone:Europe/Bucharest}")
     private String appointmentTimeZone = "Europe/Bucharest";
@@ -98,6 +110,7 @@ public class AppointmentService {
             }
         }
 
+        validateDoctorAvailability(doctor, dto);
         validateNoOverlap(doctor.getId(), patient.getId(), dto);
 
         Appointment appointment = AppointmentMapper.toEntity(dto, patient, doctor, clinic);
@@ -217,6 +230,124 @@ public class AppointmentService {
         LocalDateTime existingStart = existing.getAppointmentDate().atTime(existing.getAppointmentTime());
         LocalDateTime existingEnd = existingStart.plusMinutes(existingDuration);
         return requestedStart.isBefore(existingEnd) && requestedEnd.isAfter(existingStart);
+    }
+
+    private void validateDoctorAvailability(Doctor doctor, AppointmentDTO dto) {
+        LocalTime requestedStart = dto.getAppointmentTime();
+        LocalTime requestedEnd = requestedStart.plusMinutes(dto.getDurationMinutes());
+        List<AvailabilityWindow> windows = availabilityWindowsForDate(
+                doctor.getAvailabilitySchedule(),
+                dto.getAppointmentDate().getDayOfWeek());
+
+        boolean insideAvailability = windows.stream()
+                .anyMatch(window -> !requestedStart.isBefore(window.start())
+                        && !requestedEnd.isAfter(window.end()));
+
+        if (!insideAvailability) {
+            throw new AppointmentConflictException(
+                    "Selected time is outside the doctor's availability schedule.");
+        }
+    }
+
+    private List<AvailabilityWindow> availabilityWindowsForDate(String schedule, DayOfWeek targetDay) {
+        if (schedule == null || schedule.isBlank()) {
+            throw new AppointmentConflictException("Doctor availability schedule is not configured.");
+        }
+
+        List<AvailabilityWindow> windows = new ArrayList<>();
+        Arrays.stream(schedule.split(";"))
+                .map(String::trim)
+                .filter(part -> !part.isBlank())
+                .forEach(part -> addWindowsForSchedulePart(part, targetDay, windows));
+
+        if (windows.isEmpty()) {
+            throw new AppointmentConflictException(
+                    "Doctor availability schedule is not configured in a supported format.");
+        }
+        return windows;
+    }
+
+    private void addWindowsForSchedulePart(String schedulePart, DayOfWeek targetDay, List<AvailabilityWindow> windows) {
+        Matcher dayMatcher = DAY_SCHEDULE_PATTERN.matcher(schedulePart);
+        if (dayMatcher.matches() && dayName(dayMatcher.group(1)) != null) {
+            DayOfWeek startDay = dayName(dayMatcher.group(1));
+            DayOfWeek endDay = dayName(dayMatcher.group(2));
+            if (endDay == null) {
+                endDay = startDay;
+            }
+            if (dayRangeContains(startDay, endDay, targetDay)) {
+                addTimeRanges(dayMatcher.group(3), windows);
+            }
+            return;
+        }
+
+        addTimeRanges(schedulePart, windows);
+    }
+
+    private void addTimeRanges(String text, List<AvailabilityWindow> windows) {
+        Matcher matcher = TIME_RANGE_PATTERN.matcher(text);
+        while (matcher.find()) {
+            LocalTime start = parseTime(matcher.group(1), matcher.group(2));
+            LocalTime end = parseTime(matcher.group(3), matcher.group(4));
+            if (start.isBefore(end)) {
+                windows.add(new AvailabilityWindow(start, end));
+            }
+        }
+    }
+
+    private LocalTime parseTime(String hourValue, String minuteValue) {
+        int hour = Integer.parseInt(hourValue);
+        int minute = minuteValue == null ? 0 : Integer.parseInt(minuteValue);
+        if (hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+            throw new AppointmentConflictException(
+                    "Doctor availability schedule is not configured in a supported format.");
+        }
+        return LocalTime.of(hour, minute);
+    }
+
+    private boolean dayRangeContains(DayOfWeek startDay, DayOfWeek endDay, DayOfWeek targetDay) {
+        int day = startDay.getValue();
+        while (true) {
+            if (DayOfWeek.of(day) == targetDay) {
+                return true;
+            }
+            if (DayOfWeek.of(day) == endDay) {
+                return false;
+            }
+            day = day == 7 ? 1 : day + 1;
+        }
+    }
+
+    private DayOfWeek dayName(String value) {
+        if (value == null) {
+            return null;
+        }
+        return DAY_NAMES.get(value.trim().toLowerCase());
+    }
+
+    private static Map<String, DayOfWeek> createDayNameMap() {
+        Map<String, DayOfWeek> names = new java.util.HashMap<>();
+        names.put("mon", DayOfWeek.MONDAY);
+        names.put("monday", DayOfWeek.MONDAY);
+        names.put("tue", DayOfWeek.TUESDAY);
+        names.put("tues", DayOfWeek.TUESDAY);
+        names.put("tuesday", DayOfWeek.TUESDAY);
+        names.put("wed", DayOfWeek.WEDNESDAY);
+        names.put("wednesday", DayOfWeek.WEDNESDAY);
+        names.put("thu", DayOfWeek.THURSDAY);
+        names.put("thur", DayOfWeek.THURSDAY);
+        names.put("thurs", DayOfWeek.THURSDAY);
+        names.put("thursday", DayOfWeek.THURSDAY);
+        names.put("fri", DayOfWeek.FRIDAY);
+        names.put("friday", DayOfWeek.FRIDAY);
+        names.put("sat", DayOfWeek.SATURDAY);
+        names.put("saturday", DayOfWeek.SATURDAY);
+        names.put("sun", DayOfWeek.SUNDAY);
+        names.put("sunday", DayOfWeek.SUNDAY);
+        return names;
+    }
+
+    private record AvailabilityWindow(LocalTime start, LocalTime end) {
     }
 
 }
