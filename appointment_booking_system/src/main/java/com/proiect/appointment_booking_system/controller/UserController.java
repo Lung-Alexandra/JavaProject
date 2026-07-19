@@ -2,10 +2,12 @@ package com.proiect.appointment_booking_system.controller;
 
 
 import com.proiect.appointment_booking_system.dto.UserDTO;
+import com.proiect.appointment_booking_system.dto.ChangePasswordRequest;
 import com.proiect.appointment_booking_system.service.UserService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -33,6 +35,14 @@ public class UserController {
     @GetMapping
     public ResponseEntity<List<UserDTO>> getAllUsers() {
         return ResponseEntity.ok(userService.getAllUsers());
+    }
+
+    @PutMapping("/me/password")
+    public ResponseEntity<String> changeCurrentUserPassword(
+            Authentication authentication,
+            @RequestBody @Valid ChangePasswordRequest request) {
+        userService.changePassword(authentication.getName(), request);
+        return ResponseEntity.ok("Password changed successfully");
     }
 
     @DeleteMapping("/{id}")

@@ -7,7 +7,7 @@ while offering clinics tools for managing appointments efficiently.
 
 The current version also includes:
 - a visual dashboard at `/` for patient registration and appointment booking;
-- automatic email reminders sent through Gmail SMTP when notification time is reached.
+- automatic email reminders sent through Gmail SMTP, with Gmail API fallback when SMTP fails.
 
 ### Databese's Schema
 
@@ -378,6 +378,7 @@ Environment variables:
 ## Receive Reminders (Email Notifications)
 
 To actually receive reminder emails (not only DB records), configure Gmail SMTP and enable the notification worker.
+If SMTP is blocked by the hosting platform, the app can fall back to Gmail API through HTTPS.
 
 1. Enable 2-Step Verification on the sender Gmail account, then create a Google App Password.
 2. Set these environment variables before starting the app:
@@ -388,11 +389,18 @@ To actually receive reminder emails (not only DB records), configure Gmail SMTP 
 | `MAIL_PASSWORD` | Google App Password (16 chars) | `abcd efgh ijkl mnop` |
 | `NOTIFICATION_EMAIL_ENABLED` | Enables scheduler-based email sending | `true` |
 | `NOTIFICATION_EMAIL_FROM` | Optional explicit sender address | `myclinic@gmail.com` |
+| `GMAIL_API_CLIENT_ID` | OAuth client ID used when SMTP fails | `...apps.googleusercontent.com` |
+| `GMAIL_API_CLIENT_SECRET` | OAuth client secret used when SMTP fails | `GOCSPX-...` |
+| `GMAIL_API_REFRESH_TOKEN` | OAuth refresh token for the sender Gmail account | `1//...` |
+| `GMAIL_API_FROM_EMAIL` | Gmail API sender address | `myclinic@gmail.com` |
+| `GMAIL_API_FROM_NAME` | Gmail API sender display name | `Java Appointment` |
 | `NOTIFICATION_SCHEDULER_DELAY_MS` | Optional polling interval | `60000` |
 
 3. Register patient with a valid email address.
 4. Create an appointment; the system creates a reminder notification at `appointment - 24h`.
-5. Scheduler checks due notifications and sends emails automatically.
+5. Scheduler checks due notifications and sends emails automatically. It tries Gmail SMTP first, then Gmail API if SMTP fails.
+
+For Railway, SMTP may be blocked. Set `GMAIL_API_CLIENT_ID`, `GMAIL_API_CLIENT_SECRET`, `GMAIL_API_REFRESH_TOKEN`, `GMAIL_API_FROM_EMAIL`, and `GMAIL_API_FROM_NAME` in the service variables so reminders can still be sent through HTTPS.
 
 ## Deploy on Render
 

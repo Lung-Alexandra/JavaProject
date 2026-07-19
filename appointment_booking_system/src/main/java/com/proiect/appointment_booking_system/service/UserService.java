@@ -1,6 +1,7 @@
 package com.proiect.appointment_booking_system.service;
 
 import com.proiect.appointment_booking_system.dto.UserDTO;
+import com.proiect.appointment_booking_system.dto.ChangePasswordRequest;
 import com.proiect.appointment_booking_system.exceptions.UserAlreadyExists;
 import com.proiect.appointment_booking_system.mapper.UserMapper;
 import com.proiect.appointment_booking_system.model.User;
@@ -69,6 +70,18 @@ public class UserService {
         }
 
         userRepository.save(existingUser);
+    }
+
+    public void changePassword(String authenticatedEmail, ChangePasswordRequest request) {
+        User user = userRepository.findByEmail(authenticatedEmail)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        if (!passwordEncoder.matches(request.getCurrentPassword(), user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        user.setPassword(encodePassword(request.getNewPassword()));
+        userRepository.save(user);
     }
 
     public List<UserDTO> getAllUsers() {

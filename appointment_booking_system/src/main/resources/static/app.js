@@ -3,21 +3,47 @@ const state = {
     authUserId: localStorage.getItem("abs_user_id") || "",
     authUserEmail: localStorage.getItem("abs_user_email") || "",
     authUserRole: localStorage.getItem("abs_user_role") || "",
+    theme: localStorage.getItem("abs_theme") || "light",
+    authMode: "login",
+    securityOpen: false,
+    patientProfileOpen: false,
+    doctorProfileOpen: false,
     doctors: [],
     clinics: [],
     patientProfile: null,
     doctorProfile: null,
     patientAppointments: [],
     doctorAppointments: [],
-    patientDetailsById: {}
+    patientDetailsById: {},
+    publicClinicsLoaded: false,
+    publicClinicsLoading: null,
+    dashboardLoading: false,
+    autoRefreshTimer: null
 };
+
+const AUTO_REFRESH_MS = 30000;
 
 const statusBar = document.getElementById("statusBar");
 const authState = document.getElementById("authState");
+const themeToggle = document.getElementById("themeToggle");
+const refreshAll = document.getElementById("refreshAll");
 const logoutBtn = document.getElementById("logoutBtn");
 const guestView = document.getElementById("guestView");
+const loginCard = document.getElementById("loginCard");
+const registerCard = document.getElementById("registerCard");
+const securitySlot = document.getElementById("securitySlot");
+const accountSecurityView = document.getElementById("accountSecurityView");
+const securityToggle = document.getElementById("securityToggle");
+const securityContent = document.getElementById("securityContent");
 const patientView = document.getElementById("patientView");
 const doctorView = document.getElementById("doctorView");
+const patientProfileCard = document.getElementById("patientProfileCard");
+const doctorProfileCard = document.getElementById("doctorProfileCard");
+const patientProfileToggle = document.getElementById("patientProfileToggle");
+const doctorProfileToggle = document.getElementById("doctorProfileToggle");
+const patientProfileContent = document.getElementById("patientProfileContent");
+const doctorProfileContent = document.getElementById("doctorProfileContent");
+const loginRoleInput = document.getElementById("loginRole");
 const registerRoleSelect = document.getElementById("registerRole");
 const patientRegisterFields = document.getElementById("patientRegisterFields");
 const doctorRegisterFields = document.getElementById("doctorRegisterFields");
@@ -85,16 +111,109 @@ function setAuth(response, fallbackRole) {
     localStorage.setItem("abs_user_role", state.authUserRole);
 }
 
+function applyTheme() {
+    document.documentElement.dataset.theme = state.theme;
+    const themeLabel = themeToggle.querySelector(".theme-label");
+    const themeIcon = themeToggle.querySelector(".theme-icon");
+    const nextTheme = state.theme === "dark" ? "light" : "dark";
+    themeLabel.textContent = state.theme === "dark" ? "Light" : "Dark";
+    themeIcon.dataset.icon = state.theme === "dark" ? "sun" : "moon";
+    themeToggle.setAttribute("aria-label", `Switch to ${nextTheme} theme`);
+}
+
+function toggleTheme() {
+    state.theme = state.theme === "dark" ? "light" : "dark";
+    localStorage.setItem("abs_theme", state.theme);
+    applyTheme();
+}
+
+function setAuthMode(mode) {
+    state.authMode = mode;
+    loginCard.classList.toggle("hidden", mode !== "login");
+    registerCard.classList.toggle("hidden", mode !== "register");
+    document.querySelectorAll("[data-auth-mode]").forEach((button) => {
+        const active = button.dataset.authMode === mode;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+    });
+}
+
+function setSecurityOpen(open) {
+    state.securityOpen = open;
+    securityContent.classList.toggle("hidden", !open);
+    securityToggle.classList.toggle("active", open);
+    securityToggle.setAttribute("aria-expanded", String(open));
+}
+
+function setProfileOpen(role, open) {
+    const isDoctor = role === "DOCTOR";
+    const content = isDoctor ? doctorProfileContent : patientProfileContent;
+    const toggle = isDoctor ? doctorProfileToggle : patientProfileToggle;
+    const card = isDoctor ? doctorProfileCard : patientProfileCard;
+
+    if (isDoctor) {
+        state.doctorProfileOpen = open;
+    } else {
+        state.patientProfileOpen = open;
+    }
+
+    content.classList.toggle("hidden", !open);
+    toggle.classList.toggle("active", open);
+    card.classList.toggle("profile-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+}
+
+function closeProfiles() {
+    setProfileOpen("PATIENT", false);
+    setProfileOpen("DOCTOR", false);
+}
+
+function placeSecurityPanel(loggedIn) {
+    if (!loggedIn) {
+        securitySlot.appendChild(accountSecurityView);
+        accountSecurityView.classList.add("hidden");
+        setSecurityOpen(false);
+        return;
+    }
+
+    const target = state.authUserRole === "DOCTOR" ? doctorProfileContent : patientProfileContent;
+    target.appendChild(accountSecurityView);
+    accountSecurityView.classList.remove("hidden");
+}
+
 function updateLayout() {
     const loggedIn = Boolean(state.authToken);
     authState.textContent = loggedIn
         ? `Authenticated: ${state.authUserEmail} (${state.authUserRole})`
-        : "Not authenticated";
+        : "Please authenticate to continue";
+    refreshAll.classList.toggle("hidden", !loggedIn);
+    logoutBtn.classList.toggle("hidden", !loggedIn);
+    refreshAll.disabled = !loggedIn || state.dashboardLoading;
     logoutBtn.disabled = !loggedIn;
 
     guestView.classList.toggle("hidden", loggedIn);
     patientView.classList.toggle("hidden", !(loggedIn && state.authUserRole === "PATIENT"));
     doctorView.classList.toggle("hidden", !(loggedIn && state.authUserRole === "DOCTOR"));
+    placeSecurityPanel(loggedIn);
+}
+
+function setLoginRole(role) {
+    loginRoleInput.value = role;
+    document.querySelectorAll("[data-login-role]").forEach((button) => {
+        const active = button.dataset.loginRole === role;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+    });
+}
+
+function setRegisterRole(role) {
+    registerRoleSelect.value = role;
+    document.querySelectorAll("[data-register-role]").forEach((button) => {
+        const active = button.dataset.registerRole === role;
+        button.classList.toggle("active", active);
+        button.setAttribute("aria-pressed", String(active));
+    });
+    setRegisterRoleFields();
 }
 
 function setRegisterRoleFields() {
@@ -118,6 +237,7 @@ function setRegisterRoleFields() {
 
     if (isDoctor) {
         renderDoctorRegisterClinicOptions();
+        void loadPublicClinics().catch((error) => showStatus(error.message, true));
     }
 }
 
@@ -180,6 +300,13 @@ function fillSelect(element, options, emptyMessage, placeholder = "", selectedVa
 
 function renderDoctorRegisterClinicOptions() {
     registerDoctorClinicSelect.innerHTML = "";
+    if (state.publicClinicsLoading) {
+        const loading = option("", "Loading clinics...");
+        loading.disabled = true;
+        loading.selected = true;
+        registerDoctorClinicSelect.appendChild(loading);
+        return;
+    }
     if (!Array.isArray(state.clinics) || state.clinics.length === 0) {
         const empty = option("", "No clinics available");
         empty.disabled = true;
@@ -194,13 +321,70 @@ function renderDoctorRegisterClinicOptions() {
 }
 
 async function loadPublicClinics() {
-    const clinics = await api("/clinics", { skipAuth: true });
-    state.clinics = Array.isArray(clinics) ? clinics : [];
+    if (state.publicClinicsLoaded) {
+        renderDoctorRegisterClinicOptions();
+        return state.clinics;
+    }
+    if (state.publicClinicsLoading) {
+        return state.publicClinicsLoading;
+    }
+
+    state.publicClinicsLoading = api("/clinics", { skipAuth: true })
+        .then((clinics) => {
+            state.clinics = Array.isArray(clinics) ? clinics : [];
+            state.publicClinicsLoaded = true;
+            renderDoctorRegisterClinicOptions();
+            return state.clinics;
+        })
+        .finally(() => {
+            state.publicClinicsLoading = null;
+        });
+
     renderDoctorRegisterClinicOptions();
+    return state.publicClinicsLoading;
 }
 
 function formatDateTime(dateValue, timeValue) {
     return `${dateValue || "-"} ${timeValue || "-"}`.trim();
+}
+
+function tableCell(label, value) {
+    return `<td data-label="${label}">${value}</td>`;
+}
+
+function setLoadingText(elementId, message = "Loading...") {
+    const element = document.getElementById(elementId);
+    element.innerHTML = `<div class="loading-line">${message}</div>`;
+}
+
+function setTableLoading(tbodyId, colSpan, message = "Loading...") {
+    const body = document.getElementById(tbodyId);
+    body.innerHTML = `<tr><td colspan="${colSpan}" class="loading-cell">${message}</td></tr>`;
+}
+
+function setDashboardLoading(isLoading) {
+    state.dashboardLoading = isLoading;
+    updateLayout();
+}
+
+function startAutoRefresh() {
+    stopAutoRefresh();
+    if (!state.authToken) {
+        return;
+    }
+    state.autoRefreshTimer = setInterval(() => {
+        if (!state.authToken || state.dashboardLoading) {
+            return;
+        }
+        void refreshChangedSections({ silent: true }).catch((error) => showStatus(error.message, true));
+    }, AUTO_REFRESH_MS);
+}
+
+function stopAutoRefresh() {
+    if (state.autoRefreshTimer) {
+        clearInterval(state.autoRefreshTimer);
+        state.autoRefreshTimer = null;
+    }
 }
 
 function renderPatientProfile() {
@@ -251,6 +435,11 @@ function renderDoctorsTable() {
     const body = document.getElementById("doctorsTableBody");
     body.innerHTML = "";
 
+    if (state.doctors.length === 0) {
+        body.innerHTML = `<tr><td colspan="4" class="empty-cell">No doctors available.</td></tr>`;
+        return;
+    }
+
     state.doctors.forEach((doctor) => {
         const clinicNames = (doctor.clinicIds || [])
             .map((clinicId) => {
@@ -261,10 +450,10 @@ function renderDoctorsTable() {
 
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td>${doctor.user.name}</td>
-            <td>${doctor.specialization || "-"}</td>
-            <td>${doctor.availabilitySchedule || "-"}</td>
-            <td>${clinicNames || "-"}</td>
+            ${tableCell("Doctor", doctor.user.name)}
+            ${tableCell("Specialization", doctor.specialization || "-")}
+            ${tableCell("Schedule", doctor.availabilitySchedule || "-")}
+            ${tableCell("Clinics", clinicNames || "-")}
         `;
         body.appendChild(row);
     });
@@ -273,6 +462,11 @@ function renderDoctorsTable() {
 function renderPatientAppointments() {
     const body = document.getElementById("patientAppointmentsBody");
     body.innerHTML = "";
+
+    if (state.patientAppointments.length === 0) {
+        body.innerHTML = `<tr><td colspan="8" class="empty-cell">No appointments yet.</td></tr>`;
+        return;
+    }
 
     state.patientAppointments.forEach((appointment) => {
         const doctor = state.doctors.find((item) => item.id === appointment.doctorId);
@@ -283,14 +477,14 @@ function renderPatientAppointments() {
             : `<button class="btn btn-danger cancel-appointment" data-id="${appointment.id}" type="button">Cancel</button>`;
 
         row.innerHTML = `
-            <td>${appointment.id}</td>
-            <td>${doctor ? doctor.user.name : appointment.doctorId}</td>
-            <td>${clinic ? clinic.name : appointment.clinicId}</td>
-            <td>${appointment.appointmentDate || "-"}</td>
-            <td>${appointment.appointmentTime || "-"}</td>
-            <td>${appointment.durationMinutes || 30} min</td>
-            <td>${appointment.status || "-"}</td>
-            <td>${cancelButton}</td>
+            ${tableCell("ID", appointment.id)}
+            ${tableCell("Doctor", doctor ? doctor.user.name : appointment.doctorId)}
+            ${tableCell("Clinic", clinic ? clinic.name : appointment.clinicId)}
+            ${tableCell("Date", appointment.appointmentDate || "-")}
+            ${tableCell("Time", appointment.appointmentTime || "-")}
+            ${tableCell("Duration", `${appointment.durationMinutes || 30} min`)}
+            ${tableCell("Status", appointment.status || "-")}
+            ${tableCell("Action", cancelButton || "-")}
         `;
         body.appendChild(row);
     });
@@ -300,20 +494,25 @@ function renderDoctorAppointments() {
     const body = document.getElementById("doctorAppointmentsBody");
     body.innerHTML = "";
 
+    if (state.doctorAppointments.length === 0) {
+        body.innerHTML = `<tr><td colspan="10" class="empty-cell">No appointments yet.</td></tr>`;
+        return;
+    }
+
     state.doctorAppointments.forEach((appointment) => {
         const patient = state.patientDetailsById[appointment.patientId];
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td>#${appointment.id}</td>
-            <td>${appointment.appointmentDate || "-"}</td>
-            <td>${appointment.appointmentTime || "-"}</td>
-            <td>${appointment.durationMinutes || 30} min</td>
-            <td>${appointment.status || "-"}</td>
-            <td>${patient ? patient.user.name : appointment.patientId}</td>
-            <td>${patient ? patient.user.email : "-"}</td>
-            <td>${patient ? patient.user.phoneNumber : "-"}</td>
-            <td>${patient ? patient.address : "-"}</td>
-            <td>${patient ? (patient.medicalHistory || "-") : "-"}</td>
+            ${tableCell("Appointment", `#${appointment.id}`)}
+            ${tableCell("Date", appointment.appointmentDate || "-")}
+            ${tableCell("Time", appointment.appointmentTime || "-")}
+            ${tableCell("Duration", `${appointment.durationMinutes || 30} min`)}
+            ${tableCell("Status", appointment.status || "-")}
+            ${tableCell("Patient", patient ? patient.user.name : appointment.patientId)}
+            ${tableCell("Email", patient ? patient.user.email : "-")}
+            ${tableCell("Phone", patient ? patient.user.phoneNumber : "-")}
+            ${tableCell("Address", patient ? patient.address : "-")}
+            ${tableCell("Medical History", patient ? (patient.medicalHistory || "-") : "-")}
         `;
         body.appendChild(row);
     });
@@ -361,6 +560,10 @@ function refreshPatientAppointmentSelectors() {
 }
 
 async function loadPatientDashboard() {
+    setLoadingText("patientProfile");
+    setTableLoading("doctorsTableBody", 4);
+    setTableLoading("patientAppointmentsBody", 8);
+
     const [patientProfile, doctors, clinics, appointments] = await Promise.all([
         api(`/patients/${state.authUserId}`),
         api("/doctors"),
@@ -371,6 +574,7 @@ async function loadPatientDashboard() {
     state.patientProfile = patientProfile;
     state.doctors = Array.isArray(doctors) ? doctors : [];
     state.clinics = Array.isArray(clinics) ? clinics : [];
+    state.publicClinicsLoaded = true;
     state.patientAppointments = Array.isArray(appointments) ? appointments : [];
 
     renderPatientProfile();
@@ -379,19 +583,20 @@ async function loadPatientDashboard() {
     renderPatientAppointments();
 }
 
-async function loadPatientAppointments() {
+async function loadPatientAppointments(options = {}) {
+    if (options.showLoading) {
+        setTableLoading("patientAppointmentsBody", 8);
+    }
     const appointments = await api("/appointments/mine");
     state.patientAppointments = Array.isArray(appointments) ? appointments : [];
     renderPatientAppointments();
 }
 
-async function loadDoctorDashboard() {
-    const [doctorProfile, appointments] = await Promise.all([
-        api(`/doctors/${state.authUserId}`),
-        api("/appointments/mine")
-    ]);
-
-    state.doctorProfile = doctorProfile;
+async function loadDoctorAppointments(options = {}) {
+    if (options.showLoading) {
+        setTableLoading("doctorAppointmentsBody", 10);
+    }
+    const appointments = await api("/appointments/mine");
     state.doctorAppointments = Array.isArray(appointments) ? appointments : [];
 
     const patientIds = [...new Set(state.doctorAppointments.map((item) => item.patientId))];
@@ -401,21 +606,63 @@ async function loadDoctorDashboard() {
         state.patientDetailsById[patient.id] = patient;
     });
 
-    renderDoctorProfile();
     renderDoctorAppointments();
 }
 
-async function loadDashboardData() {
+async function loadDoctorDashboard() {
+    setLoadingText("doctorProfile");
+    setTableLoading("doctorAppointmentsBody", 10);
+
+    state.doctorProfile = await api(`/doctors/${state.authUserId}`);
+    await loadDoctorAppointments();
+    renderDoctorProfile();
+}
+
+async function refreshChangedSections(options = {}) {
     if (!state.authToken) {
+        if (!options.silent) {
+            showStatus("Please authenticate first.", true);
+        }
         return;
     }
 
-    if (state.authUserRole === "PATIENT") {
-        await loadPatientDashboard();
+    setDashboardLoading(true);
+    try {
+        if (state.authUserRole === "PATIENT") {
+            await loadPatientAppointments({ showLoading: !options.silent });
+        } else if (state.authUserRole === "DOCTOR") {
+            await loadDoctorAppointments({ showLoading: !options.silent });
+        }
+        if (!options.silent) {
+            showStatus("Updated current section.");
+        }
+    } finally {
+        setDashboardLoading(false);
+    }
+}
+
+async function loadDashboardData(options = {}) {
+    if (!state.authToken) {
+        if (!options.silent) {
+            showStatus("Please authenticate first.", true);
+        }
         return;
     }
-    if (state.authUserRole === "DOCTOR") {
-        await loadDoctorDashboard();
+
+    setDashboardLoading(true);
+    try {
+        if (state.authUserRole === "PATIENT") {
+            await loadPatientDashboard();
+            return;
+        }
+        if (state.authUserRole === "DOCTOR") {
+            await loadDoctorDashboard();
+        }
+        if (!options.silent) {
+            showStatus("Data refreshed.");
+        }
+    } finally {
+        setDashboardLoading(false);
     }
 }
 
@@ -435,9 +682,45 @@ async function handleLogin(event) {
     });
 
     setAuth(response, role);
+    closeProfiles();
     updateLayout();
-    await loadDashboardData();
-    showStatus("Login successful.");
+    startAutoRefresh();
+    showStatus("Login successful. Loading dashboard...");
+    void loadDashboardData({ silent: true }).catch((error) => showStatus(error.message, true));
+}
+
+async function handlePasswordChange(event) {
+    event.preventDefault();
+
+    if (!state.authToken) {
+        throw new Error("Please authenticate before changing your password.");
+    }
+
+    const currentPassword = document.getElementById("currentPassword").value;
+    const newPassword = document.getElementById("newPassword").value;
+    const confirmNewPassword = document.getElementById("confirmNewPassword").value;
+
+    if (newPassword !== confirmNewPassword) {
+        throw new Error("The new password confirmation does not match.");
+    }
+
+    const form = event.currentTarget;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const originalButtonText = submitButton.textContent;
+    submitButton.disabled = true;
+    submitButton.textContent = "Changing...";
+
+    try {
+        await api("/users/me/password", {
+            method: "PUT",
+            body: JSON.stringify({ currentPassword, newPassword })
+        });
+        form.reset();
+        showStatus("Password changed.");
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
+    }
 }
 
 async function handleRegister(event) {
@@ -533,7 +816,7 @@ async function handleCreatePatientAppointment(event) {
 
         form.reset();
         setDateMin();
-        await loadPatientAppointments();
+        await loadPatientAppointments({ showLoading: true });
         showStatus("Appointment created.");
     } catch (error) {
         if (appointmentCreated) {
@@ -557,14 +840,45 @@ async function handlePatientAppointmentsClick(event) {
     if (!appointmentId) {
         return;
     }
+    if (target.disabled) {
+        return;
+    }
 
-    await api(`/appointments/${appointmentId}/cancel`, { method: "DELETE" });
-    await loadPatientDashboard();
-    showStatus("Appointment cancelled.");
+    const originalText = target.textContent;
+    target.disabled = true;
+    target.textContent = "Cancelling...";
+    try {
+        await api(`/appointments/${appointmentId}/cancel`, { method: "DELETE" });
+        state.patientAppointments = state.patientAppointments.map((appointment) => (
+            String(appointment.id) === String(appointmentId)
+                ? { ...appointment, status: "CANCELLED" }
+                : appointment
+        ));
+        renderPatientAppointments();
+        showStatus("Appointment cancelled.");
+    } catch (error) {
+        target.disabled = false;
+        target.textContent = originalText;
+        throw error;
+    }
 }
 
 function bindEvents() {
     bindPasswordToggles();
+
+    themeToggle.addEventListener("click", toggleTheme);
+
+    document.querySelectorAll("[data-auth-mode]").forEach((button) => {
+        button.addEventListener("click", () => setAuthMode(button.dataset.authMode));
+    });
+
+    document.querySelectorAll("[data-login-role]").forEach((button) => {
+        button.addEventListener("click", () => setLoginRole(button.dataset.loginRole));
+    });
+
+    document.querySelectorAll("[data-register-role]").forEach((button) => {
+        button.addEventListener("click", () => setRegisterRole(button.dataset.registerRole));
+    });
 
     document.getElementById("loginForm").addEventListener("submit", async (event) => {
         try {
@@ -582,21 +896,22 @@ function bindEvents() {
         }
     });
 
-    registerRoleSelect.addEventListener("change", setRegisterRoleFields);
-
     logoutBtn.addEventListener("click", () => {
+        stopAutoRefresh();
         clearAuth();
+        document.getElementById("passwordChangeForm").reset();
+        setSecurityOpen(false);
+        closeProfiles();
         updateLayout();
         showStatus("Logged out.");
     });
 
-    document.getElementById("refreshAll").addEventListener("click", async () => {
+    refreshAll.addEventListener("click", async () => {
         try {
             if (!state.authToken) {
-                throw new Error("Login first.");
+                throw new Error("Please authenticate first.");
             }
-            await loadDashboardData();
-            showStatus("Data refreshed.");
+            await refreshChangedSections();
         } catch (error) {
             showStatus(error.message, true);
         }
@@ -612,6 +927,26 @@ function bindEvents() {
         }
     });
 
+    document.getElementById("passwordChangeForm").addEventListener("submit", async (event) => {
+        try {
+            await handlePasswordChange(event);
+        } catch (error) {
+            showStatus(error.message, true);
+        }
+    });
+
+    securityToggle.addEventListener("click", () => {
+        setSecurityOpen(!state.securityOpen);
+    });
+
+    patientProfileToggle.addEventListener("click", () => {
+        setProfileOpen("PATIENT", !state.patientProfileOpen);
+    });
+
+    doctorProfileToggle.addEventListener("click", () => {
+        setProfileOpen("DOCTOR", !state.doctorProfileOpen);
+    });
+
     document.getElementById("patientAppointmentsBody").addEventListener("click", async (event) => {
         try {
             await handlePatientAppointmentsClick(event);
@@ -623,13 +958,18 @@ function bindEvents() {
 
 async function init() {
     try {
+        applyTheme();
         setDateMin();
-        await loadPublicClinics();
         bindEvents();
-        setRegisterRoleFields();
+        setAuthMode("login");
+        setLoginRole(loginRoleInput.value || "PATIENT");
+        setRegisterRole(registerRoleSelect.value || "PATIENT");
         updateLayout();
         if (state.authToken) {
-            await loadDashboardData();
+            startAutoRefresh();
+            void loadDashboardData({ silent: true }).catch((error) => showStatus(error.message, true));
+        } else {
+            void loadPublicClinics().catch((error) => showStatus(error.message, true));
         }
         showStatus("Portal ready.");
     } catch (error) {

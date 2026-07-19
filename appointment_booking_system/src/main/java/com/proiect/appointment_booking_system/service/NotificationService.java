@@ -13,6 +13,7 @@ import com.proiect.appointment_booking_system.repository.PatientRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailAuthenticationException;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -46,6 +47,9 @@ public class NotificationService {
 
     @Autowired(required = false)
     private JavaMailSender mailSender;
+
+    @Autowired
+    private GmailApiEmailClient gmailApiEmailClient;
 
     @Value("${notifications.email.enabled:false}")
     private boolean emailEnabled;
@@ -86,8 +90,8 @@ public class NotificationService {
         if (!emailEnabled) {
             return;
         }
-        if (mailSender == null) {
-            LOGGER.warn("Email notifications are enabled, but JavaMailSender is not configured.");
+        if (mailSender == null && !gmailApiEmailClient.isConfigured()) {
+            LOGGER.warn("Email notifications are enabled, but neither JavaMailSender nor Gmail API is configured.");
             return;
         }
 
@@ -113,32 +117,86 @@ public class NotificationService {
             return;
         }
 
+        String subject = "Appointment Reminder";
+        String body = buildReminderBody(notification);
+
+        if (sendWithSmtp(notification, recipient, subject, body)
+                || sendWithGmailApi(notification, recipient, subject, body)) {
+            notification.setDelivered(true);
+            notification.setDeliveredAt(LocalDateTime.now(ZoneOffset.UTC));
+            repository.save(notification);
+            LOGGER.info("Reminder notification {} was accepted by an email provider for {}.",
+                    notification.getId(),
+                    recipient);
+        }
+    }
+
+    private boolean sendWithSmtp(Notification notification, String recipient, String subject, String body) {
+        if (mailSender == null) {
+            LOGGER.info("JavaMailSender is not configured. Trying Gmail API for notification {}.", notification.getId());
+            return false;
+        }
+
         SimpleMailMessage message = new SimpleMailMessage();
         if (senderEmail != null && !senderEmail.isBlank()) {
             message.setFrom(senderEmail);
         }
         message.setTo(recipient);
-        message.setSubject("Appointment Reminder");
-        message.setText(buildReminderBody(notification));
+        message.setSubject(subject);
+        message.setText(body);
 
         try {
-            LOGGER.info("Sending reminder email for notification {} to {}.", notification.getId(), recipient);
+            LOGGER.info("Sending reminder email through SMTP for notification {} to {}.", notification.getId(), recipient);
             mailSender.send(message);
-            notification.setDelivered(true);
-            notification.setDeliveredAt(LocalDateTime.now(ZoneOffset.UTC));
-            repository.save(notification);
-            LOGGER.info("Successfully sent reminder for notification {} to {}.", notification.getId(), recipient);
+            return true;
         } catch (MailAuthenticationException exception) {
             LOGGER.error(
-                    "SMTP authentication failed for sender {}. Verify MAIL_USERNAME and a valid Gmail App Password.",
+                    "SMTP authentication failed for sender {}. Trying Gmail API fallback.",
                     senderEmail,
                     exception);
-        } catch (Exception exception) {
+            return false;
+        } catch (MailException exception) {
             LOGGER.warn(
-                    "Failed to send reminder for notification {} to {}",
+                    "SMTP failed for notification {} to {}. Trying Gmail API fallback.",
                     notification.getId(),
                     recipient,
                     exception);
+            return false;
+        } catch (Exception exception) {
+            LOGGER.warn(
+                    "Unexpected SMTP failure for notification {} to {}. Trying Gmail API fallback.",
+                    notification.getId(),
+                    recipient,
+                    exception);
+            return false;
+        }
+    }
+
+    private boolean sendWithGmailApi(Notification notification, String recipient, String subject, String body) {
+        if (!gmailApiEmailClient.isConfigured()) {
+            LOGGER.warn("Gmail API fallback is not configured for notification {}.", notification.getId());
+            return false;
+        }
+
+        String recipientName = notification.getPatient().getUser().getName();
+        try {
+            LOGGER.info("Sending reminder email through Gmail API for notification {} from {} to {}.",
+                    notification.getId(),
+                    gmailApiEmailClient.getFromEmail(),
+                    recipient);
+            String messageId = gmailApiEmailClient.sendEmail(recipient, recipientName, subject, body);
+            LOGGER.info("Gmail API accepted notification {} for {} with message id {}.",
+                    notification.getId(),
+                    recipient,
+                    messageId != null ? messageId : "-");
+            return true;
+        } catch (Exception exception) {
+            LOGGER.warn(
+                    "Gmail API failed for notification {} to {}.",
+                    notification.getId(),
+                    recipient,
+                    exception);
+            return false;
         }
     }
 

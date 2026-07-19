@@ -17,6 +17,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.mail.MailSendException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -30,6 +31,9 @@ import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.contains;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -47,6 +51,8 @@ class NotificationServiceTest {
     private AppointmentRepository appointmentRepository;
     @Mock
     private JavaMailSender mailSender;
+    @Mock
+    private GmailApiEmailClient gmailApiEmailClient;
 
     @InjectMocks
     private NotificationService notificationService;
@@ -85,6 +91,29 @@ class NotificationServiceTest {
         notificationService.sendDueNotifications();
 
         verify(mailSender).send(any(SimpleMailMessage.class));
+        verify(gmailApiEmailClient, never()).sendEmail(any(), any(), any(), any());
+        verify(notificationRepository).save(notification);
+        assertTrue(notification.isDelivered());
+    }
+
+    @Test
+    void sendDueNotifications_ShouldUseGmailApiWhenSmtpFails() {
+        Notification notification = notification(LocalDateTime.now(ZoneOffset.UTC).minusMinutes(1));
+        when(notificationRepository.findBySentAtLessThanEqualAndDeliveredFalse(any(LocalDateTime.class)))
+                .thenReturn(List.of(notification));
+        when(gmailApiEmailClient.isConfigured()).thenReturn(true);
+        doThrow(new MailSendException("SMTP blocked"))
+                .when(mailSender)
+                .send(any(SimpleMailMessage.class));
+
+        notificationService.sendDueNotifications();
+
+        verify(mailSender).send(any(SimpleMailMessage.class));
+        verify(gmailApiEmailClient).sendEmail(
+                eq("patient@example.com"),
+                eq("Patient Test"),
+                eq("Appointment Reminder"),
+                contains("Doctor: Doctor Test"));
         verify(notificationRepository).save(notification);
         assertTrue(notification.isDelivered());
     }

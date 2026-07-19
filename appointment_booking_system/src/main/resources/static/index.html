@@ -12,6 +12,10 @@
 <body>
 <div class="bg-shape bg-shape-one"></div>
 <div class="bg-shape bg-shape-two"></div>
+<button id="themeToggle" type="button" class="theme-float" aria-label="Switch to dark theme" title="Switch theme">
+    <span class="theme-icon" aria-hidden="true"></span>
+    <span class="theme-label">Dark</span>
+</button>
 
 <main class="container">
     <header class="hero reveal">
@@ -22,22 +26,29 @@
             Doctors can view their appointments and patient details.
         </p>
         <div class="hero-actions">
-            <button id="refreshAll" type="button" class="btn btn-primary">Refresh</button>
-            <button id="logoutBtn" type="button" class="btn btn-secondary" disabled>Logout</button>
+            <button id="refreshAll" type="button" class="btn btn-primary hidden">Refresh</button>
+            <button id="logoutBtn" type="button" class="btn btn-secondary hidden">Logout</button>
             <span id="authState" class="tip">Not authenticated</span>
         </div>
     </header>
 
     <section id="guestView" class="grid reveal" aria-label="Auth and registration">
-        <article class="card">
+        <div class="auth-shell">
+            <div class="role-toggle auth-mode-toggle" aria-label="Authentication mode">
+                <button type="button" class="role-option active" data-auth-mode="login">Login</button>
+                <button type="button" class="role-option" data-auth-mode="register">Register</button>
+            </div>
+        </div>
+
+        <article id="loginCard" class="card">
             <h2>Login</h2>
+            <p class="auth-notice">Please authenticate as a patient or doctor to use the dashboard.</p>
             <form id="loginForm" class="form">
-                <label>Login as
-                    <select id="loginRole" required>
-                        <option value="PATIENT">Patient</option>
-                        <option value="DOCTOR">Doctor</option>
-                    </select>
-                </label>
+                <input id="loginRole" type="hidden" value="PATIENT">
+                <div class="role-toggle" aria-label="Login role">
+                    <button type="button" class="role-option active" data-login-role="PATIENT">Patient</button>
+                    <button type="button" class="role-option" data-login-role="DOCTOR">Doctor</button>
+                </div>
                 <label>Email
                     <input id="loginEmail" type="email" required>
                 </label>
@@ -54,15 +65,14 @@
             </form>
         </article>
 
-        <article class="card">
+        <article id="registerCard" class="card hidden">
             <h2>Register</h2>
             <form id="registerForm" class="form">
-                <label>Register as
-                    <select id="registerRole" required>
-                        <option value="PATIENT">Patient</option>
-                        <option value="DOCTOR">Doctor</option>
-                    </select>
-                </label>
+                <input id="registerRole" type="hidden" value="PATIENT">
+                <div class="role-toggle" aria-label="Register role">
+                    <button type="button" class="role-option active" data-register-role="PATIENT">Patient</button>
+                    <button type="button" class="role-option" data-register-role="DOCTOR">Doctor</button>
+                </div>
                 <label>Full name
                     <input id="registerName" type="text" required minlength="2">
                 </label>
@@ -111,10 +121,62 @@
         </article>
     </section>
 
+    <section id="securitySlot" class="hidden" aria-hidden="true"></section>
+    <div id="accountSecurityView" class="security-panel hidden" aria-label="Account security">
+        <button id="securityToggle" type="button" class="security-toggle" aria-expanded="false" aria-controls="securityContent">
+            <span class="security-toggle-icon" aria-hidden="true"></span>
+            <span>Change Password</span>
+            <span class="security-chevron" aria-hidden="true"></span>
+        </button>
+        <div id="securityContent" class="security-content hidden">
+            <h3>Account Security</h3>
+            <p class="helper">The current password cannot be loaded from the server because it is stored encrypted. Your browser may autofill it if you saved it.</p>
+            <form id="passwordChangeForm" class="form security-form">
+                <label>Current password
+                    <span class="password-field">
+                        <input id="currentPassword" type="password" required minlength="8" autocomplete="current-password">
+                        <button type="button" class="password-toggle" data-password-toggle="currentPassword"
+                                aria-controls="currentPassword" aria-label="Show current password" aria-pressed="false">
+                            Show
+                        </button>
+                    </span>
+                </label>
+                <label>New password
+                    <span class="password-field">
+                        <input id="newPassword" type="password" required minlength="8" autocomplete="new-password">
+                        <button type="button" class="password-toggle" data-password-toggle="newPassword"
+                                aria-controls="newPassword" aria-label="Show new password" aria-pressed="false">
+                            Show
+                        </button>
+                    </span>
+                </label>
+                <label>Confirm new password
+                    <span class="password-field">
+                        <input id="confirmNewPassword" type="password" required minlength="8" autocomplete="new-password">
+                        <button type="button" class="password-toggle" data-password-toggle="confirmNewPassword"
+                                aria-controls="confirmNewPassword" aria-label="Show confirmed password" aria-pressed="false">
+                            Show
+                        </button>
+                    </span>
+                </label>
+                <button type="submit" class="btn btn-primary">Change Password</button>
+            </form>
+        </div>
+    </div>
+
     <section id="patientView" class="stack reveal hidden" aria-label="Patient dashboard">
-        <article class="card">
-            <h2>My Profile</h2>
-            <div id="patientProfile" class="list"></div>
+        <article id="patientProfileCard" class="card profile-card">
+            <button id="patientProfileToggle" type="button" class="profile-toggle" aria-expanded="false" aria-controls="patientProfileContent">
+                <span class="profile-toggle-icon" aria-hidden="true"></span>
+                <span class="profile-toggle-text">
+                    <span class="profile-title">My Profile</span>
+                    <span class="profile-subtitle">Account details and password</span>
+                </span>
+                <span class="profile-chevron" aria-hidden="true"></span>
+            </button>
+            <div id="patientProfileContent" class="profile-content hidden">
+                <div id="patientProfile" class="list"></div>
+            </div>
         </article>
 
         <article class="card">
@@ -185,9 +247,18 @@
     </section>
 
     <section id="doctorView" class="stack reveal hidden" aria-label="Doctor dashboard">
-        <article class="card">
-            <h2>Doctor Profile</h2>
-            <div id="doctorProfile" class="list"></div>
+        <article id="doctorProfileCard" class="card profile-card">
+            <button id="doctorProfileToggle" type="button" class="profile-toggle" aria-expanded="false" aria-controls="doctorProfileContent">
+                <span class="profile-toggle-icon" aria-hidden="true"></span>
+                <span class="profile-toggle-text">
+                    <span class="profile-title">Doctor Profile</span>
+                    <span class="profile-subtitle">Account details and password</span>
+                </span>
+                <span class="profile-chevron" aria-hidden="true"></span>
+            </button>
+            <div id="doctorProfileContent" class="profile-content hidden">
+                <div id="doctorProfile" class="list"></div>
+            </div>
         </article>
 
         <article class="card">
