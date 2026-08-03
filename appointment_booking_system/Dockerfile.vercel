@@ -1,22 +1,30 @@
-FROM eclipse-temurin:21-jdk AS build
+FROM eclipse-temurin:21-jdk-jammy AS build
 
 WORKDIR /app
 
-COPY .mvn .mvn
+COPY .mvn/ .mvn/
 COPY mvnw pom.xml ./
 
 RUN chmod +x mvnw
 RUN ./mvnw --batch-mode --no-transfer-progress dependency:go-offline
 
-COPY src src
+COPY src/ src/
 
 RUN ./mvnw --batch-mode --no-transfer-progress clean package -DskipTests
 
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:21-jre-jammy
+
+ENV JAVA_HOME=/opt/java/openjdk
+ENV PATH="${JAVA_HOME}/bin:${PATH}"
 
 WORKDIR /app
 
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build /app/target/*.jar /app/app.jar
 
-CMD ["sh", "-c", "java -jar app.jar --server.port=${PORT:-80}"]
+# Deployment-ul eșuează la build dacă imaginea finală nu conține Java.
+RUN /opt/java/openjdk/bin/java -version
+
+EXPOSE 80
+
+CMD ["/opt/java/openjdk/bin/java", "-jar", "/app/app.jar"]
